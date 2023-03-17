@@ -21,7 +21,9 @@ from tensorflow.keras.models import Sequential
 # cf.go_offline()
 
 #create internet page name
-st.set_page_config(page_title="AirBnB Price Prediction with ML", layout='wide', initial_sidebar_state="collapsed")
+# st.set_page_config(page_title="AirBnB Price Prediction with ML", layout='wide', initial_sidebar_state="collapsed")
+
+st.set_page_config(page_title="AirBnB Price Prediction with ML", layout='wide')
 
 @st.cache_data
 def get_data():
@@ -29,13 +31,23 @@ def get_data():
     Path("Resources/air_bnb.csv"))
     return df
 
+df_original = get_data()
+bnb_df=df_original.copy()
+bnb_df_map=bnb_df.loc[bnb_df['realSum']<=500]
+
+with st.sidebar:
+    st.subheader('Data Analysis')
+    city_selection = st.selectbox("Select a city for data analysis (when required):", tuple(bnb_df['city'].unique()))
+
+    st.subheader('Machine Learning')
+    my_mlm=['Random Forest','Neural Network']
+    mlm_selection = st.selectbox("Select a Nachine Learning Model:", tuple(my_mlm))
 
 # Create four tabs to display our application as per below breakdown
 tab1, tab2, tab3, tab4 = st.tabs(['Introduction','Data Analysis and Cleansing','Exploratory Data Analysis','Machine Learning'])
 
 with tab1:
-    df_original = get_data()
-    bnb_df=df_original.copy()
+
     icon,title=st.columns([1,20])
     with icon: 
         st.image('Images/bnb.png', use_column_width=True)
@@ -43,10 +55,21 @@ with tab1:
         st.title('Introduction')
 
     st.header('About This Application:')
+    col1,col2=st.columns(2)
+    with col2:
+        # st.subheader('Explore Listings of '+city_selection+' - Original data:')
+        # # city_selection2 = st.selectbox("Select a city:", tuple(bnb_df['city'].unique()))
+        fig_map = px.density_mapbox(bnb_df_map.loc[bnb_df_map['city']==city_selection], lat = 'lat', lon = 'lng', z = 'realSum', radius = 10, center = dict(lat=bnb_df_map.loc[bnb_df['city']==city_selection]['lat'].mean(), lon = bnb_df_map.loc[bnb_df['city']==city_selection]['lng'].mean()),
+                                zoom = 11, hover_name='room_type', mapbox_style = 'open-street-map',
+                            title = 'Explore Listings of '+city_selection,labels={'realSum': 'Listing Price' })
+        st.plotly_chart(fig_map,use_container_width=True)
+    
+    with col1:
+        # st.header('About This Application:')
 
-    my_text = "to be completed.."
+        my_text = "to be completed.."
 
-    st.write(my_text)
+        st.write(my_text)
 
     # col1,col2=st.columns([1,2])    
     # with col1:
@@ -154,7 +177,8 @@ with tab2:
         st.plotly_chart(fig_hist,use_container_width=True)
 
     st.subheader('Listing Prices Outliers:')
-    city_selection = st.selectbox("Select a city to analyse further the listing price outliers:", tuple(bnb_df['city'].unique()))
+    st.caption('Please select a a **:blue[city]** in the sidebar.')
+    # city_selection = st.selectbox("Select a city to analyse further the listing price outliers:", tuple(bnb_df['city'].unique()))
 
     col1,col2 = st.columns(2, gap='large')
     with col1:
@@ -168,7 +192,7 @@ with tab2:
         fig.update_layout(showlegend=False)
         st.plotly_chart(fig_quantile,use_container_width=True)
 
-        st.caption('Based on the distribution analysis the lisiting prices above **:blue[700]** can be considered as outliers and will be removed for the Exploratory Data Analysis.')
+        st.caption('Based on the distribution analysis the lisiting prices above **:blue[650]** can be considered as outliers and will be removed for the Exploratory Data Analysis.')
 
     with col2:
         # city_selection = st.selectbox("Select a city to analyse further the listing price outliers:", tuple(bnb_df['city'].unique()))
@@ -182,13 +206,13 @@ with tab2:
                        y=bnb_df['listing_price'][bnb_df['day_of_week']=='weekend'],
                        legendgroup='Yes', scalegroup='Yes', name='weekend',
                        side='positive', line_color='red'))
-        fig_city.update_layout(title=city_selection +' City Violin Plot')
+        fig_city.update_layout(title=city_selection +' City Violin Plot', yaxis_title='Listing Price')
         st.plotly_chart(fig_city,use_container_width=True)
         st.markdown(f' ##### {city_selection} Listing Price Quantiles')
         # st.write(bnb_df.loc[bnb_df['city']==city_selection]['listing_price'].quantile([0.01, 0.25, 0.5, 0.75, 0.99]))
     
     # remove outliers (listing prices above 750):
-    df=bnb_df.loc[bnb_df['listing_price']<=700]
+    df=bnb_df.loc[bnb_df['listing_price']<=650]
     
     price_outliers_new=px.violin(df, x='city', y='listing_price', box=True, 
                 color='day_of_week', points='all', hover_data=df.columns,
@@ -197,13 +221,13 @@ with tab2:
    
     
 with tab3:
-    # Create a list of categorical variables 
-    categorical_variables = list(df.dtypes[df.dtypes == "object"].index)
-    # Create a dataframewith categorical variables 
-    df_categrical=df[categorical_variables]
+    # # Create a list of categorical variables 
+    # categorical_variables = list(df.dtypes[df.dtypes == "object"].index)
+    # # Create a dataframewith categorical variables 
+    # df_categrical=df[categorical_variables]
     
-    # Create a dDataframe with non-categorical variables:
-    df_numerical=df.drop(columns = categorical_variables)
+    # # Create a dDataframe with non-categorical variables:
+    # df_numerical=df.drop(columns = categorical_variables)
 
     icon,title=st.columns([1,20])
     with icon: 
@@ -230,10 +254,9 @@ with tab3:
         city_room_fig.update_traces(texttemplate='%{text:2s}', textposition='outside')
         st.plotly_chart(city_room_fig,use_container_width=True)
 
-    st.subheader('Listing Price (Target) / Features Regression Analysis:')
-    city_regression = st.selectbox("Select a city:", tuple(df_categrical
-    ['city'].unique()))
-    df_city=df.loc[df['city']==city_regression]
+    st.subheader(city_selection +' Listing Price (Target) / Features Regression Analysis:')
+    st.caption('**Please select a a :blue[city] in the sidebar.**')
+    df_city=df.loc[df['city']==city_selection]
 
     col1,col2=st.columns([1,4])
     columns_list=['day_of_week','host_is_superhost','multiple_rooms ',' business_facilities']
@@ -257,7 +280,8 @@ with tab3:
         #    labels={'room_type' : 'Room Type','listing_price': 'Listing Price', 'day_of_week': 'Day of Week', 'bedrooms_quantity':'Number of Bedrooms'}, title='Features Regression Analysis')
 
     
-    st.subheader(city_regression+  ' Listing Price (Target) / Features Correlation Analysis:')
+    st.subheader(city_selection+  ' Listing Price (Target) / Features Correlation Analysis:')
+    
     col1,col2 = st.columns(2, gap='large')
     with col1:
         corr_df = df_city.corr()[['listing_price']].sort_values(by='listing_price', ascending=False)
@@ -269,7 +293,7 @@ with tab3:
         fig = px.imshow(corr_df.round(2), color_continuous_scale='Viridis', aspect="auto", text_auto=".2f")
         fig.update_xaxes(side="top")
         st.plotly_chart(fig,use_container_width=True)
-        st.caption('**NOTE: The correlation between the Target and the Features as well as between the Features is :blue[quite low]. Therefore, Neuaral Network and Decision Tree Machine Learning Models will be selected.**')
+        st.caption('**NOTE: The correlation between the Target and the Features as well as between the Features is :blue[quite low]. Therefore, Neuaral Network and Random Forest Machine Learning Models will be selected.**')
 
     with col2:
         st.markdown(' ##### Features Correlations:')
@@ -316,6 +340,16 @@ with tab3:
 
     
 with tab4:
+        # Create a list of categorical variables 
+    categorical_variables = list(df.dtypes[df.dtypes == "object"].index)
+    # Create a dataframewith categorical variables 
+    df_categrical=df[categorical_variables]
+    
+    # Create a dDataframe with non-categorical variables:
+    df_numerical=df.drop(columns = categorical_variables)
+
+    target = df['listing_price']
+    features_selection=df.drop(columns=['listing_price'])
 
     icon,title=st.columns([1,20])
     with icon: 
@@ -324,4 +358,14 @@ with tab4:
         st.title('Machine Learning and Price Prediction')
 
 
-    st.header('Original Data Review and Cleansing:')
+    st.header('Features Selection:')
+    features_list=st.multiselect('Select Features to be included in ML:', features_selection.columns)
+
+    features=df[features_list]
+    target_col,features_col=st.columns([1,9])
+    with target_col:
+        st.markdown('#### Target:')
+        st.write(target)
+    with features_col:
+        st.markdown('#### Features:')
+        st.write(features)

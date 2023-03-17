@@ -1,3 +1,4 @@
+import time
 from pathlib import Path
 
 import chart_studio.plotly as py
@@ -12,8 +13,10 @@ import seaborn as sns
 import streamlit as st
 import tensorflow as tf
 from plotly.offline import download_plotlyjs, init_notebook_mode, plot
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from tensorflow.keras.layers import Dense
 from tensorflow.keras.models import Sequential
 
@@ -36,12 +39,21 @@ bnb_df=df_original.copy()
 bnb_df_map=bnb_df.loc[bnb_df['realSum']<=500]
 
 with st.sidebar:
+    # with st.spinner('Application running, please wait'):
+    #     time.sleep(25)
     st.subheader('Data Analysis')
     city_selection = st.selectbox("Select a city for data analysis (when required):", tuple(bnb_df['city'].unique()))
+
 
     st.subheader('Machine Learning')
     my_mlm=['Random Forest','Neural Network']
     mlm_selection = st.selectbox("Select a Nachine Learning Model:", tuple(my_mlm))
+    if mlm_selection== 'Random Forest':
+        max_depth = st.slider("Depth of the Model:", min_value=10, max_value=100, value=20, step = 10)
+        n_estimators=st.selectbox("Number of Estimators:",options=[100, 150, 200, 250, 300], index = 0)
+    else:
+        n_epoches= st.slider("Number of Epochs:", min_value=50, max_value=500, value=100, step = 50)
+        n_layers=st.selectbox("Number of Hidden Layers:",options=[1, 2, 3], index = 0)
 
 # Create four tabs to display our application as per below breakdown
 tab1, tab2, tab3, tab4 = st.tabs(['Introduction','Data Analysis and Cleansing','Exploratory Data Analysis','Machine Learning'])
@@ -52,54 +64,40 @@ with tab1:
     with icon: 
         st.image('Images/bnb.png', use_column_width=True)
     with title:
-        st.title('Introduction')
+        st.title('Airbnb Price Prediction (European cities)')
 
-    st.header('About This Application:')
-    col1,col2=st.columns(2)
-    with col2:
-        # st.subheader('Explore Listings of '+city_selection+' - Original data:')
-        # # city_selection2 = st.selectbox("Select a city:", tuple(bnb_df['city'].unique()))
-        fig_map = px.density_mapbox(bnb_df_map.loc[bnb_df_map['city']==city_selection], lat = 'lat', lon = 'lng', z = 'realSum', radius = 10, center = dict(lat=bnb_df_map.loc[bnb_df['city']==city_selection]['lat'].mean(), lon = bnb_df_map.loc[bnb_df['city']==city_selection]['lng'].mean()),
+    fig_map = px.density_mapbox(bnb_df_map.loc[bnb_df_map['city']==city_selection], lat = 'lat', lon = 'lng', z = 'realSum', radius = 10, center = dict(lat=bnb_df_map.loc[bnb_df['city']==city_selection]['lat'].mean(), lon = bnb_df_map.loc[bnb_df['city']==city_selection]['lng'].mean()),
                                 zoom = 11, hover_name='room_type', mapbox_style = 'open-street-map',
-                            title = 'Explore Listings of '+city_selection,labels={'realSum': 'Listing Price' })
-        st.plotly_chart(fig_map,use_container_width=True)
-    
-    with col1:
-        # st.header('About This Application:')
+                            title = 'Explore Listings in '+city_selection,labels={'realSum': 'Listing Price' })
+    st.plotly_chart(fig_map,use_container_width=True)
 
-        my_text = "to be completed.."
+    st.subheader('Project Description:')
 
-        st.write(my_text)
+    st.markdown('''
+        The project consists of following parts:
+* Initial data analysis - reviewing data, providing more descriptive names to columns, removing redundant columns, checking for descriptive statistics, missing values, duplicates, data distribution and  outliers and correcting for all of those if needed.
+* Exploratory data analysis - analyzing relationships between the features and a target (listing prices).
+* Applying Machine Learning regression models to predict the Airbnb properties' listings prices based on a set of selected features; calibrating the models by changing features and model parameters to optimize the performance; selecting a better performing model and applying it to a user input to determine a property listing price.
+''')
 
-    # col1,col2=st.columns([1,2])    
-    # with col1:
+    st.subheader('Project Objective:')
+
+    st.markdown('''The objective of the project is two-fold:
+1. Help Airbnb owners understanding the relationship between different characteristics of their property to potentially improve services and profitability of their business.
+2. Apply machine learning to the data set to be able to predict the listing price by providing selected features (based on the model optimization analysis). The ultimate objective here ranges from assisting:
+   - a traveler to estimate the Airbnb price in the vacation destination'
+   - new business owners who are trying to set an appropriate competitive price for their property;
+   - new and existing business owners who attempt to estimate what property characteristics affect the price of their property and how they can potentially improve their profitability.''')
+
     st.subheader('Dataset:')
 
-    my_text_data = "to be completed."
-
-    st.write(my_text_data)
-    # with col2:
-
-        # st.subheader('Explore Listings by Location - Original data:')
-        # city_selection2 = st.selectbox("Select a city:", tuple(bnb_df['city'].unique()))
-        # fig_map = px.density_mapbox(bnb_df.loc[bnb_df['city']==city_selection2], lat = 'lat', lon = 'lng', z = 'realSum', radius = 10, center = dict(lat=bnb_df.loc[bnb_df['city']==city_selection2]['lat'].mean(), lon = bnb_df.loc[bnb_df['city']==city_selection2]['lng'].mean()),
-        #                     zoom = 10, hover_name='room_type', mapbox_style = 'open-street-map',
-        #                 title = city_selection2+ ' Price per listing',labels={'realSum': 'Listing Price' })
-        # st.plotly_chart(fig_map,use_container_width=True)
-
-    st.subheader('Application Setup:')
-
-    my_text_application = "to be completed."
-
-    st.write(my_text_application)
+    st.markdown('''[Airbnb Price Determinants in Europe](https://www.kaggle.com/datasets/thedevastator/airbnb-price-determinants-in-europe) dataset can be found on Kaggle. The website also provides a descriptions of the data characteristics, possible dataset use cases and potential research ideas''')
 
     st.subheader('Other Areas to Investigate:')
 
     my_text_other = "to be completed."
 
-    st.write(my_text_other)
-
-
+    st.markdown('''As the dataset contains cystomer satisfuction information, the next step could be to utilize Machine Learning Classifiers to study the relationship between the variables in the dataset and the custormer satisfaction. Such an alaysis could be useful for Airbnb owners who aim at optimizing different characteristics of their property to achive the maximum client satisfaction ''')
 
 with tab2:
 
@@ -113,8 +111,8 @@ with tab2:
     st.header('Original Data Review and Cleansing:')
     # df_original = get_data()
 
-    st.subheader('Original Dataset:')
-    st.dataframe(df_original,use_container_width=True)
+    st.subheader('Original Dataset (top 5 rows) :')
+    st.dataframe(df_original.head(),use_container_width=True)
 
     #make a copy of the original dataframe
     # bnb_df=df_original.copy()
@@ -131,9 +129,9 @@ with tab2:
     #modify columns with Boolean data:
     bnb_df['host_is_superhost']=bnb_df['host_is_superhost'].apply(lambda x:1 if x==True else 0)
 
-    st.subheader('Modified Dataset')
+    st.subheader('Modified Dataset (top 5 rows)')
     st.caption('NOTE: Redundant columns removed, descriptive names given to columns, boolean type columns modified.')
-    st.dataframe(bnb_df,use_container_width=True)
+    st.dataframe(bnb_df.head(),use_container_width=True)
 
     st.subheader('Descriptive Statistics:')
     st.write(bnb_df.describe(),use_container_width=True)
@@ -147,11 +145,11 @@ with tab2:
         st.write(bnb_df.shape,use_container_width=True)
         st.caption('The modified dataset has 51,707 rows and 13 columns.')
     with col2:
-        st.markdown(' #### Duplicated Rows - Totals:')
+        st.markdown(' #### Duplicated Rows:')
         st.write(bnb_df.duplicated().sum(),use_container_width=True)
         st.caption('There are no duplicated rows.')
     with col3:
-        st.markdown(' #### Misssing Values - Totals:')
+        st.markdown(' #### Misssing Values:')
         st.write(bnb_df.isnull().sum(),use_container_width=True)
         st.caption('There are no missing values.')
     with col4:
@@ -160,7 +158,8 @@ with tab2:
         st.caption('There are three columns with cathegorical data: day_of_week, room_type and city, which is in line with expectations.')
     
     st.subheader('Data Distirbution and Outliers:')
-
+    # outliers=st.button('Show Outliers Analysis?')
+    # if outliers:
      # select column to analize value_counts()
     column_selection = st.selectbox("Select a column to analyze the number of unique values and distribution:", tuple(bnb_df.columns))
     
@@ -168,8 +167,8 @@ with tab2:
   
     with col1:
         # st.write(bnb_df[column_selection].value_counts())
-        fig = px.bar(bnb_df[column_selection].value_counts(), x=column_selection, labels={'index': 'Unique Values' }, title = column_selection + ' - Unique Values Count')
-        fig.update_layout(uniformtext_minsize=8)
+        fig = px.bar(bnb_df[column_selection].value_counts(), y=column_selection, labels={'index': 'Unique Values' }, title = column_selection + ' - Unique Values Count')
+        fig.update_layout(uniformtext_minsize=8, yaxis_title='Unique Values count', xaxis_title=column_selection)
         st.plotly_chart(fig,use_container_width=True)
 
     with col2:
@@ -340,23 +339,14 @@ with tab3:
 
     
 with tab4:
-        # Create a list of categorical variables 
-    categorical_variables = list(df.dtypes[df.dtypes == "object"].index)
-    # Create a dataframewith categorical variables 
-    df_categrical=df[categorical_variables]
-    
-    # Create a dDataframe with non-categorical variables:
-    df_numerical=df.drop(columns = categorical_variables)
-
-    target = df['listing_price']
-    features_selection=df.drop(columns=['listing_price'])
-
     icon,title=st.columns([1,20])
     with icon: 
         st.image('Images/house.png', use_column_width=True)
     with title:
         st.title('Machine Learning and Price Prediction')
 
+    target = df['listing_price']
+    features_selection=df.drop(columns=['listing_price'])
 
     st.header('Features Selection:')
     features_list=st.multiselect('Select Features to be included in ML:', features_selection.columns)
@@ -364,8 +354,77 @@ with tab4:
     features=df[features_list]
     target_col,features_col=st.columns([1,9])
     with target_col:
-        st.markdown('#### Target:')
-        st.write(target)
+        st.markdown('#### Targe:')
+        st.dataframe(target.tail())
     with features_col:
-        st.markdown('#### Features:')
-        st.write(features)
+        st.markdown('#### Features (top 5 rows):')
+        st.dataframe(features.tail())
+
+    # Create a list of categorical variables 
+    categorical_variables = list(features.dtypes[df.dtypes == "object"].index)
+    # Create a dataframewith categorical variables 
+    df_categrical=features[categorical_variables]
+    
+    # Create a dDataframe with non-categorical variables:
+    df_numerical=features.drop(columns = categorical_variables)
+
+    # st.dataframe(df_categrical.head())
+    # st.dataframe(df_numerical.head())
+
+    # Create a OneHotEncoder instance
+    enc =OneHotEncoder(categories='auto', sparse=False)
+    # Encode the categorcal variables using OneHotEncoder
+    encoded_data =  enc.fit_transform(features[categorical_variables])
+
+    # Create a DataFrame with the encoded variables
+    encoded_df = pd.DataFrame(
+        encoded_data,
+        columns = enc.get_feature_names(categorical_variables)
+    )
+
+    # Review the DataFrame
+    st.dataframe(encoded_df.tail())
+
+    # Add the numerical variables from the original DataFrame to the one-hot encoding DataFrame
+    encoded_df_2 = pd.concat(
+        [
+            df_numerical,
+            encoded_df
+        ],
+        axis=1
+    )
+
+    # Review the Dataframe
+    st.dataframe(encoded_df.tail())
+
+    # Define the target and features as y and X:
+    y = df['listing_price']
+    X = encoded_df
+    st.write(df_numerical.tail())
+    st.write(features[categorical_variables].tail())
+    st.write(encoded_data)
+    # # Split the preprocessed data into a training and testing dataset
+    # # Assign the function a random_state equal to 1
+    # X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=1)
+
+    # # Create a StandardScaler instance
+    # scaler =  StandardScaler()
+
+    # # Fit the scaler to the features training dataset
+    # X_scaler = scaler.fit(X_train)
+
+    # # Fit the scaler to the features training dataset
+    # X_train_scaled = X_scaler.transform(X_train)
+    # X_test_scaled = X_scaler.transform(X_test)
+
+    # # Fit the scaler to the target training dataset
+    # y_scaler = scaler.fit(y_train)
+
+    # # Fit the scaler to the target training dataset
+    # y_train_scaled = y_scaler.transform(y_train)
+    # y_test_scaled = y_scaler.transform(y_test)
+
+    # st.dataframe(y_test_scaled.head())
+    # st.dataframe(X_test_scaled.head())
+
+    # Create a deep neural network by assigning the number of input features, the number of layers, and the number of neurons on each layer using Tensorflow’s Keras.

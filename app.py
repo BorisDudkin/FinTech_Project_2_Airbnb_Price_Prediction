@@ -16,7 +16,7 @@ from plotly.offline import download_plotlyjs, init_notebook_mode, plot
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.preprocessing import LabelEncoder, OneHotEncoder, StandardScaler
 from tensorflow.keras.layers import Dense
 from tensorflow.keras.models import Sequential
 
@@ -52,7 +52,7 @@ with st.sidebar:
         max_depth = st.slider("Depth of the Model:", min_value=10, max_value=100, value=20, step = 10)
         n_estimators=st.selectbox("Number of Estimators:",options=[100, 150, 200, 250, 300], index = 0)
     else:
-        n_epoches= st.slider("Number of Epochs:", min_value=50, max_value=500, value=100, step = 50)
+        n_epochs= st.slider("Number of Epochs:", min_value=50, max_value=500, value=100, step = 50)
         n_layers=st.selectbox("Number of Hidden Layers:",options=[1, 2, 3], index = 0)
 
 # Create four tabs to display our application as per below breakdown
@@ -210,9 +210,12 @@ with tab2:
         st.markdown(f' ##### {city_selection} Listing Price Quantiles')
         # st.write(bnb_df.loc[bnb_df['city']==city_selection]['listing_price'].quantile([0.01, 0.25, 0.5, 0.75, 0.99]))
     
-    # remove outliers (listing prices above 750):
+    # remove outliers (listing prices above 650):
     df=bnb_df.loc[bnb_df['listing_price']<=650]
-    
+    df = df.reset_index(drop=True)
+    st.markdown('#### Dataset Shape:')
+    st.write(df.shape,use_container_width=True)
+    st.dataframe(df.tail(),use_container_width=True)
     price_outliers_new=px.violin(df, x='city', y='listing_price', box=True, 
                 color='day_of_week', points='all', hover_data=df.columns,
                 labels={'city': 'City','listing_price': 'Listing Price' }, title = 'Listing Price Distribution per city (corrected for outliers)')
@@ -344,37 +347,59 @@ with tab4:
         st.image('Images/house.png', use_column_width=True)
     with title:
         st.title('Machine Learning and Price Prediction')
+    
+    
+    # st.markdown('#### Dataset Shape:')
+    # st.write(df.tail(),use_container_width=True)
+    y = df['listing_price']
 
-    target = df['listing_price']
     features_selection=df.drop(columns=['listing_price'])
 
     st.header('Features Selection:')
     features_list=st.multiselect('Select Features to be included in ML:', features_selection.columns)
 
-    features=df[features_list]
-    target_col,features_col=st.columns([1,9])
+    features_df=df[features_list]
+    target_col,features_col=st.columns([1,8])
     with target_col:
-        st.markdown('#### Targe:')
-        st.dataframe(target.tail())
+        st.markdown('Target:')
+        st.write(y[-5:],use_container_width=True)
     with features_col:
-        st.markdown('#### Features (top 5 rows):')
-        st.dataframe(features.tail())
+        st.markdown('Features (bottom 5 rows):')
+        st.dataframe(features_df.tail())
 
     # Create a list of categorical variables 
-    categorical_variables = list(features.dtypes[df.dtypes == "object"].index)
+    categorical_variables = list(features_df.dtypes[df.dtypes == "object"].index)
+
     # Create a dataframewith categorical variables 
-    df_categrical=features[categorical_variables]
+    df_categrical=features_df[categorical_variables]
     
     # Create a dDataframe with non-categorical variables:
-    df_numerical=features.drop(columns = categorical_variables)
+    df_numerical=features_df.drop(columns = categorical_variables)
 
-    # st.dataframe(df_categrical.head())
-    # st.dataframe(df_numerical.head())
+    # st.dataframe(df_categrical.tail())
+    # st.dataframe(df_numerical.tail())
+
+#     le = LabelEncoder()
+#     features[categorical_variables] = features[categorical_variables].apply(lambda col: le.fit_transform(col))
+# #   Viewing first few rows of data
+#     st.markdown('test')
+#     st.dataframe(features[categorical_variables].tail(100))
+
+#     # st.write(features['city'].value_counts())
+#     # st.write(df['city'].value_counts())
+#     onehotencoder = OneHotEncoder(sparse=False)
+#     encoded_data_1=onehotencoder.fit_transform(features[categorical_variables])
+#     encoded_df_1 = pd.DataFrame(
+#         encoded_data_1,
+#         columns = onehotencoder.get_feature_names(categorical_variables)
+#     )
+#     st.markdown('test2')
+#     st.dataframe(encoded_df_1.tail(10))
 
     # Create a OneHotEncoder instance
     enc =OneHotEncoder(categories='auto', sparse=False)
     # Encode the categorcal variables using OneHotEncoder
-    encoded_data =  enc.fit_transform(features[categorical_variables])
+    encoded_data =  enc.fit_transform(features_df[categorical_variables])
 
     # Create a DataFrame with the encoded variables
     encoded_df = pd.DataFrame(
@@ -382,11 +407,8 @@ with tab4:
         columns = enc.get_feature_names(categorical_variables)
     )
 
-    # Review the DataFrame
-    st.dataframe(encoded_df.tail())
-
     # Add the numerical variables from the original DataFrame to the one-hot encoding DataFrame
-    encoded_df_2 = pd.concat(
+    encoded_df = pd.concat(
         [
             df_numerical,
             encoded_df
@@ -394,28 +416,25 @@ with tab4:
         axis=1
     )
 
-    # Review the Dataframe
-    st.dataframe(encoded_df.tail())
-
-    # Define the target and features as y and X:
-    y = df['listing_price']
+    # Define the features as y and X:
     X = encoded_df
-    st.write(df_numerical.tail())
-    st.write(features[categorical_variables].tail())
-    st.write(encoded_data)
-    # # Split the preprocessed data into a training and testing dataset
-    # # Assign the function a random_state equal to 1
-    # X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=1)
+     # Review the features
+    st.markdown('Features Encoded Dataframe (bottom 5 rows):')
+    st.dataframe(X.tail())
 
-    # # Create a StandardScaler instance
-    # scaler =  StandardScaler()
+    # Split the preprocessed data into a training and testing dataset
+    # Assign the function a random_state equal to 1
+    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=1)
 
-    # # Fit the scaler to the features training dataset
-    # X_scaler = scaler.fit(X_train)
+    # Create a StandardScaler instance
+    scaler =  StandardScaler()
 
-    # # Fit the scaler to the features training dataset
-    # X_train_scaled = X_scaler.transform(X_train)
-    # X_test_scaled = X_scaler.transform(X_test)
+    # Fit the scaler to the features training dataset
+    X_scaler = scaler.fit(X_train)
+
+    # Fit the scaler to the features training dataset
+    X_train_scaled = X_scaler.transform(X_train)
+    X_test_scaled = X_scaler.transform(X_test)
 
     # # Fit the scaler to the target training dataset
     # y_scaler = scaler.fit(y_train)
@@ -424,7 +443,125 @@ with tab4:
     # y_train_scaled = y_scaler.transform(y_train)
     # y_test_scaled = y_scaler.transform(y_test)
 
-    # st.dataframe(y_test_scaled.head())
-    # st.dataframe(X_test_scaled.head())
+    # st.write(y_test_scaled[-5:])
+    # st.write(X_test_scaled[-5:])
+    create_model=st.button('Create Machine Learning Model?')
+    if create_model:
+        with st.spinner('Model is being created. Please wait for the complition confirmation message.'):
+            time.sleep(5)
 
-    # Create a deep neural network by assigning the number of input features, the number of layers, and the number of neurons on each layer using Tensorflow’s Keras.
+        if mlm_selection =='Neural Network':
+            # Create a deep neural network by assigning the number of input features, the number of layers, and the number of neurons on each layer using Tensorflow’s Keras.
+
+            # Define the the number of inputs (features) to the model
+            number_input_features =  len(X_train.iloc[0])
+            # st.write(number_input_features)
+
+            # Define the number of neurons in the output layer
+            number_output_neurons = 1
+
+            #  n_epochs
+            # n_layers
+            # Define the number of hidden nodes for the first hidden layer
+            hidden_nodes_layer1 =   (number_input_features + number_output_neurons) // 2 
+            # st.write(hidden_nodes_layer1)
+
+            # Define the number of hidden nodes for the second hidden layer
+            hidden_nodes_layer2 = (hidden_nodes_layer1 + number_output_neurons) // 2
+
+            #   Review the number hidden nodes in the second layer
+            # st.write(hidden_nodes_layer2)
+
+            # Define the number of hidden nodes for the third hidden layer
+            hidden_nodes_layer3 = (hidden_nodes_layer2 + number_output_neurons) // 2
+
+            #   Review the number hidden nodes in the second layer
+            # st.write(hidden_nodes_layer3)
+            # Create the Sequential model instance
+            nn = Sequential()
+            # Add the first hidden layer
+            nn.add(Dense(units=hidden_nodes_layer1, input_dim=number_input_features, activation="relu"))
+
+            if n_layers==2:
+                # Add the second hidden layer
+                nn.add(Dense(units=hidden_nodes_layer2, activation="relu"))
+            elif n_layers==3:
+                # Add the second hidden layer
+                nn.add(Dense(units=hidden_nodes_layer2, activation="relu"))
+                # Add the third hidden layer
+                nn.add(Dense(units=hidden_nodes_layer3, activation="relu"))
+
+            # Output layer
+            nn.add(Dense(units=number_output_neurons, activation="linear"))
+
+                #Compile the model
+            nn.compile(loss="mean_squared_error", optimizer="adam", metrics=["mse"])
+
+            # Fit the model
+            model = nn.fit(X_train_scaled, y_train, epochs=n_epochs, verbose=1) 
+            # Evaluate the model loss and accuracy metrics using the evaluate method and the test data
+            loss, mse =  nn.evaluate(X_test_scaled,y_test,verbose=2)
+            # st.write(round(np.sqrt(mse),2))
+            # st.write(round(loss,2))
+            prediction=nn.predict(X_test_scaled)
+            mean_square=round(np.sqrt(mean_squared_error(y_test, prediction)),2)
+            mean_abs = round(mean_absolute_error(y_test, prediction),2)
+            st.success('Model is created and saved. View the evaluation results below:')
+            st.markdown(f'Mean Square Error is: **:blue[{mean_square}]**')
+            st.write(f'Mean Absolute Error is: **:blue[{mean_abs}]**')
+
+            # Save model as JSON
+            nn_json = nn.to_json()
+
+            file_path = Path("./Resources/model.json")
+            with open(file_path, "w") as json_file:
+                json_file.write(nn_json)
+            # Save weights
+            file_path = "./Resources/model.h5"
+            nn.save_weights("./Resources/model.h5")
+
+        else:
+            # Create arandom forest regressor model
+
+            rf_model = RandomForestRegressor(max_depth=max_depth, n_estimators=n_estimators, random_state=1)
+            
+            # Fit the model
+            rf_model = rf_model.fit(X_train_scaled, y_train)
+
+           # Making predictions using the testing data
+            prediction = rf_model.predict(X_test_scaled)
+
+            # Displaying results            
+            mean_square=round(np.sqrt(mean_squared_error(y_test, prediction)),2)
+            mean_abs = round(mean_absolute_error(y_test, prediction),2)
+            st.success('Model is created and saved. View the evaluation results below:')
+            st.markdown(f'Mean Square Error is: **:blue[{mean_square}]**')
+            st.write(f'Mean Absolute Error is: **:blue[{mean_abs}]**')
+
+            # Feature Importance
+            # Random Forests in sklearn will automatically calculate feature importance
+            importances = rf_model.feature_importances_
+            # Zip the feature importances with the associated feature name
+            important_features = zip(X.columns, importances)
+
+            # Create a dataframe of the important features
+            importances_df = pd.DataFrame(important_features)
+
+            # Rename the columns
+            importances_df = importances_df.rename(columns={0: 'Feature', 1: 'Importance'})
+
+            # Set the index
+            importances_df = importances_df.set_index('Feature')
+
+            # Sort the dataframe by feature importance
+            importances_df = importances_df.sort_values(by='Importance',ascending=False)
+
+            # st.dataframe(importances_df)
+            # Create a plot
+            fig_importance = px.bar(importances_df,  title = 'Feature Importance')
+            fig_importance.update_layout(uniformtext_minsize=8, yaxis_title='Importance Score', xaxis_title='Feature', showlegend=False)
+            st.plotly_chart(fig_importance,use_container_width=True)
+
+
+            # Save model as JSON
+            

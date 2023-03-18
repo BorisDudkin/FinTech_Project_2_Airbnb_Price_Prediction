@@ -1,3 +1,4 @@
+import pickle
 import time
 from pathlib import Path
 
@@ -18,7 +19,7 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder, StandardScaler
 from tensorflow.keras.layers import Dense
-from tensorflow.keras.models import Sequential
+from tensorflow.keras.models import Sequential, model_from_json
 
 # init_notebook_mode(connected=True)
 # cf.go_offline()
@@ -213,9 +214,9 @@ with tab2:
     # remove outliers (listing prices above 650):
     df=bnb_df.loc[bnb_df['listing_price']<=650]
     df = df.reset_index(drop=True)
-    st.markdown('#### Dataset Shape:')
+    st.markdown('#### Dataset Shape corrected for outliers:')
     st.write(df.shape,use_container_width=True)
-    st.dataframe(df.tail(),use_container_width=True)
+    # st.dataframe(df.tail(),use_container_width=True)
     price_outliers_new=px.violin(df, x='city', y='listing_price', box=True, 
                 color='day_of_week', points='all', hover_data=df.columns,
                 labels={'city': 'City','listing_price': 'Listing Price' }, title = 'Listing Price Distribution per city (corrected for outliers)')
@@ -366,6 +367,9 @@ with tab4:
     with features_col:
         st.markdown('Features (bottom 5 rows):')
         st.dataframe(features_df.tail())
+
+    # create an empty dataframe to store the names of the selected columns
+    empty_df = pd.DataFrame(columns=features_df.columns)
 
     # Create a list of categorical variables 
     categorical_variables = list(features_df.dtypes[df.dtypes == "object"].index)
@@ -520,6 +524,9 @@ with tab4:
             file_path = "./Resources/model.h5"
             nn.save_weights("./Resources/model.h5")
 
+            # save the emptu dataframe as csv for future reference:
+            empty_df.to_csv(Path('./Resources/neural_network.csv'), encoding='utf-8', index=False)
+
         else:
             # Create arandom forest regressor model
 
@@ -562,6 +569,10 @@ with tab4:
             fig_importance.update_layout(uniformtext_minsize=8, yaxis_title='Importance Score', xaxis_title='Feature', showlegend=False)
             st.plotly_chart(fig_importance,use_container_width=True)
 
+            # Save model
+            data = {'model': rf_model, 'encoder': enc, 'scaler': scaler}
+            with open(Path('./Resources/random_forest.pkl'), 'wb') as file:
+                pickle.dump(data, file)
 
-            # Save model as JSON
-            
+            # save the emptu dataframe as csv for future reference:
+            empty_df.to_csv(Path('./Resources/random_forest.csv'), encoding='utf-8', index=False)

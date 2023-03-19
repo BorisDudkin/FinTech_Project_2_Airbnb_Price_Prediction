@@ -349,7 +349,7 @@ with tab4:
         st.title('Machine Learning Model Selection')
     
     
-    # st.markdown('#### Dataset Shape:')
+    df_predict=df.copy()
     # st.write(df.tail(),use_container_width=True)
     y = df['listing_price']
 
@@ -379,26 +379,6 @@ with tab4:
     
     # Create a dDataframe with non-categorical variables:
     df_numerical=features_df.drop(columns = categorical_variables)
-
-    # st.dataframe(df_categrical.tail())
-    # st.dataframe(df_numerical.tail())
-
-#     le = LabelEncoder()
-#     features[categorical_variables] = features[categorical_variables].apply(lambda col: le.fit_transform(col))
-# #   Viewing first few rows of data
-#     st.markdown('test')
-#     st.dataframe(features[categorical_variables].tail(100))
-
-#     # st.write(features['city'].value_counts())
-#     # st.write(df['city'].value_counts())
-#     onehotencoder = OneHotEncoder(sparse=False)
-#     encoded_data_1=onehotencoder.fit_transform(features[categorical_variables])
-#     encoded_df_1 = pd.DataFrame(
-#         encoded_data_1,
-#         columns = onehotencoder.get_feature_names(categorical_variables)
-#     )
-#     st.markdown('test2')
-#     st.dataframe(encoded_df_1.tail(10))
 
     # Create a OneHotEncoder instance
     enc =OneHotEncoder(categories='auto', sparse=False)
@@ -430,25 +410,16 @@ with tab4:
     # Assign the function a random_state equal to 1
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=1)
 
-    # Create a StandardScaler instance
-    scaler =  StandardScaler()
+    # # Create a StandardScaler instance
+    # scaler =  StandardScaler()
 
-    # Fit the scaler to the features training dataset
-    X_scaler = scaler.fit(X_train)
+    # # Fit the scaler to the features training dataset
+    # X_scaler = scaler.fit(X_train)
 
-    # Fit the scaler to the features training dataset
-    X_train_scaled = X_scaler.transform(X_train)
-    X_test_scaled = X_scaler.transform(X_test)
+    # # Fit the scaler to the features training dataset
+    # X_train_scaled = X_scaler.transform(X_train)
+    # X_test_scaled = X_scaler.transform(X_test)
 
-    # # Fit the scaler to the target training dataset
-    # y_scaler = scaler.fit(y_train)
-
-    # # Fit the scaler to the target training dataset
-    # y_train_scaled = y_scaler.transform(y_train)
-    # y_test_scaled = y_scaler.transform(y_test)
-
-    # st.write(y_test_scaled[-5:])
-    # st.write(X_test_scaled[-5:])
     create_model=st.button('Create Machine Learning Model?')
     if create_model:
         with st.spinner('Model is being created. Please wait for the complition confirmation message.'):
@@ -456,6 +427,16 @@ with tab4:
 
         if mlm_selection =='Neural Network':
             # Create a deep neural network by assigning the number of input features, the number of layers, and the number of neurons on each layer using Tensorflow’s Keras.
+
+                # Create a StandardScaler instance
+            scaler_nn =  StandardScaler()
+
+            # Fit the scaler to the features training dataset
+            X_scaler = scaler_nn.fit(X_train)
+
+            # Fit the scaler to the features training dataset
+            X_train_scaled = X_scaler.transform(X_train)
+            X_test_scaled = X_scaler.transform(X_test)
 
             # Define the the number of inputs (features) to the model
             number_input_features =  len(X_train.iloc[0])
@@ -514,6 +495,15 @@ with tab4:
             st.markdown(f'Mean Square Error is: **:blue[{mean_square}]**')
             st.write(f'Mean Absolute Error is: **:blue[{mean_abs}]**')
 
+            # Visualizing predictions vs lisitng price:
+            df_predict['prediction']=nn.predict(X_scaler.transform(X))
+            st.markdown('Dataframe including predictions:')
+            st.dataframe(df_predict.tail())
+            fig_predictions=px.line(df_predict, y= ['listing_price','prediction'],title='<b>Listing Price vs Predicted Price</b>')
+            fig_predictions.update_layout(showlegend=True, yaxis_title="Prices", xaxis_title="Data Points")
+            st.plotly_chart(fig_predictions,use_container_width=True)
+
+
             # Save model as JSON
             nn_json = nn.to_json()
 
@@ -523,11 +513,20 @@ with tab4:
             # Save weights
             file_path = "./Resources/model.h5"
             nn.save_weights("./Resources/model.h5")
-
-            # save the emptu dataframe as csv for future reference:
-            empty_df.to_csv(Path('./Resources/neural_network.csv'), encoding='utf-8', index=False)
+                    # save the features_df dataframe as csv for future reference:
+            features_df.to_csv(Path('./Resources/neural_network.csv'), encoding='utf-8', index=False)
 
         else:
+            # Create a StandardScaler instance
+            scaler_rf =  StandardScaler()
+
+            # Fit the scaler to the features training dataset
+            X_scaler = scaler_rf.fit(X_train)
+
+            # Fit the scaler to the features training dataset
+            X_train_scaled = X_scaler.transform(X_train)
+            X_test_scaled = X_scaler.transform(X_test)
+
             # Create arandom forest regressor model
 
             rf_model = RandomForestRegressor(max_depth=max_depth, n_estimators=n_estimators, random_state=1)
@@ -569,13 +568,22 @@ with tab4:
             fig_importance.update_layout(uniformtext_minsize=8, yaxis_title='Importance Score', xaxis_title='Feature', showlegend=False)
             st.plotly_chart(fig_importance,use_container_width=True)
 
+            # Visualizing predictions vs lisitng price:
+            df_predict['prediction']=rf_model.predict(X_scaler.transform(X))
+            st.markdown('Dataframe including predictions:')
+            st.dataframe(df_predict.tail())
+            fig_predictions=px.line(df_predict, y= ['listing_price','prediction'],title='<b>Listing Price vs Predicted Price</b>')
+            fig_predictions.update_layout(showlegend=True, yaxis_title="Prices", xaxis_title="Data Points")
+            st.plotly_chart(fig_predictions,use_container_width=True)
+
             # Save model
-            data = {'model': rf_model, 'encoder': enc, 'scaler': scaler}
+            # data = {'model': rf_model, 'encoder': enc, 'scaler': scaler_rf}
+            data = {'model': rf_model, 'scaler': scaler_rf}
             with open(Path('./Resources/random_forest.pkl'), 'wb') as file:
                 pickle.dump(data, file)
 
-            # save the emptu dataframe as csv for future reference:
-            empty_df.to_csv(Path('./Resources/random_forest.csv'), encoding='utf-8', index=False)
+            # save the features_df dataframe as csv for future reference:
+            features_df.to_csv(Path('./Resources/random_forest.csv'), encoding='utf-8', index=False)
 
 with tab5:
 
@@ -588,32 +596,33 @@ with tab5:
     st.subheader('Applying Saved Machine Learning Model to User Input to Predict a Listing Price:')
     # response=st.radio('Chose a model to predict a listing price:', tuple(['Random Forest','Neural Network']))
     st.markdown('**Select a model and provide input about your Airbnb on the Sidebar**')
+
     if mlm_selection == 'Random Forest':
         file_path = Path("./Resources/random_forest.csv")
-        # lod model
+         # lod model
         with open(Path('./Resources/random_forest.pkl'), 'rb') as file:
                 data=pickle.load(file)
 
         loaded_model=data[ 'model']
-        enc=data[ 'encoder']
+         # enc=data[ 'encoder']
         scaler=data[ 'scaler']
     else: 
         file_path = Path("./Resources/neural_network.csv")
-        # load model:
-        file_path = Path("./Resources/model.json")
-        with open(file_path, "r") as json_file:
+         # load model:
+        file_path_model = Path("./Resources/model.json")
+        with open(file_path_model, "r") as json_file:
             model_json = json_file.read()
         loaded_model = model_from_json(model_json)
 
         # load weights into new model
-        file_path = "./Resources/model.h5"
-        loaded_model.load_weights(file_path)
+        file_pfile_path_model = "./Resources/model.h5"
+        loaded_model.load_weights(file_pfile_path_model)
     
-    empty_df = get_data(file_path)
-    feater_columns = empty_df.columns.to_list()
+    predict_df = get_data(file_path)
+    feater_columns = predict_df.columns.to_list()
 
     st.subheader('Airbnb Characteristics (User Input Summary):')
-        
+
     input_dict={}
     st.sidebar.subheader('Airbnb Charcteristics:')
     for column in feater_columns:
@@ -624,47 +633,35 @@ with tab5:
         elif column =="city_center_distance":
             input_dict[column] = st.sidebar.slider(column, min_value=0.01, max_value=29.99, value=1.01, step = 0.01)
         elif column in categorical_variables:
-            input_dict[column] =st.sidebar.selectbox(column, tuple(df[column].sort_values().unique()))          
+            user_input =st.sidebar.selectbox(column, tuple(df[column].sort_values().unique()))
+            for char in  df[column].unique():
+                if char ==user_input:
+                    input_dict[column+'_'+char] = 1
+                else:
+                    input_dict[column+'_'+char] = 0 
         else:
             input_dict[column] =float(st.sidebar.selectbox(column, tuple(df[column].sort_values().unique())))
 
-    input_df=pd.DataFrame(data = input_dict, index=[0])
-     # st.write(input_df)
-    st.write(input_dict)
+    create_prediction=st.button('Predict listing price?')
+    if create_prediction:
+        input_df=pd.DataFrame(data = input_dict, index=[0])
+        # st.write(input_df)
+        # st.write(input_dict)
+        # # Define the features as y and X:
+        X_final = input_df
 
-    # Create a list of categorical variables 
-    categorical_variables = list(input_df.dtypes[df.dtypes == "object"].index)
+        st.markdown('Dataframe including prediction:')
+        # Make some predictions with the loaded model
+        input_df["predicted"] = loaded_model.predict(scaler.transform(X_final))
+        st.dataframe(input_df)
 
-    # # Create a OneHotEncoder instance
-    # enc =OneHotEncoder(categories='auto', sparse=False)
+        # X_one_row = scaler.transform([one_row]) # one row is not a 2D array. List around 1D array.
+        # st.write(X_one_row)
+        lisitng_price=input_df['predicted']
 
-    # Encode the categorcal variables using OneHotEncoder
-    encoded_data =  enc.fit_transform(input_df[categorical_variables])
-
-    # Create a DataFrame with the encoded variables
-    encoded_df = pd.DataFrame(
-        encoded_data,
-        columns = enc.get_feature_names(categorical_variables)
-    )
-
-    # Add the numerical variables from the original DataFrame to the one-hot encoding DataFrame
-    encoded_df = pd.concat(
-        [
-            input_df.drop(columns = categorical_variables),
-            encoded_df
-        ],
-        axis=1
-    )
-
-    # Define the features as y and X:
-    X = encoded_df
-     # Review the features
-    st.dataframe(X)
-    X_scaled= scaler.transform(X)
-    st.dataframe(X_scaled)
-    # lisitng_price=loaded_model.predict(X_scaled)[0][0]
-
-    st.subheader('Listing Price Prediction:')
-    st.markdown(f'#### **Your Airbnb lisitjng price is predicted to be EUR: :blue[{50000}]**')
+        st.subheader('Listing Price Prediction:')
+        st.write(lisitng_price)
+        # if lisitng_price is not None:
+            # st.markdown(f'#### **Your Airbnb lisitjng price is predicted to be EUR: :blue{lisitng_price: .2f}**')
+            
     
- 

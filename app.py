@@ -30,12 +30,12 @@ from tensorflow.keras.models import Sequential, model_from_json
 st.set_page_config(page_title="AirBnB Price Prediction with ML", layout='wide')
 
 @st.cache_data
-def get_data():
-    df = pd.read_csv(
-    Path("Resources/air_bnb.csv"))
+def get_data(file_path):
+    df = pd.read_csv(file_path)
     return df
 
-df_original = get_data()
+file_path = Path("./Resources/air_bnb.csv")
+df_original = get_data(file_path)
 bnb_df=df_original.copy()
 bnb_df_map=bnb_df.loc[bnb_df['realSum']<=500]
 
@@ -57,7 +57,7 @@ with st.sidebar:
         n_layers=st.selectbox("Number of Hidden Layers:",options=[1, 2, 3], index = 0)
 
 # Create four tabs to display our application as per below breakdown
-tab1, tab2, tab3, tab4 = st.tabs(['Introduction','Data Analysis and Cleansing','Exploratory Data Analysis','Machine Learning'])
+tab1, tab2, tab3, tab4, tab5 = st.tabs(['Introduction','Data Analysis and Cleansing','Exploratory Data Analysis','Machine Learning', 'Model Prediction'])
 
 with tab1:
 
@@ -78,7 +78,8 @@ with tab1:
         The project consists of following parts:
 * Initial data analysis - reviewing data, providing more descriptive names to columns, removing redundant columns, checking for descriptive statistics, missing values, duplicates, data distribution and  outliers and correcting for all of those if needed.
 * Exploratory data analysis - analyzing relationships between the features and a target (listing prices).
-* Applying Machine Learning regression models to predict the Airbnb properties' listings prices based on a set of selected features; calibrating the models by changing features and model parameters to optimize the performance; selecting a better performing model and applying it to a user input to determine a property listing price.
+* Applying Machine Learning regression models to predict the Airbnb properties' listings prices based on a set of selected features; calibrating the models by changing features and model parameters to optimize the performance; selecting a better performing model.
+* Applying the saved model to a user input to determine a property listing price.
 ''')
 
     st.subheader('Project Objective:')
@@ -95,8 +96,6 @@ with tab1:
     st.markdown('''[Airbnb Price Determinants in Europe](https://www.kaggle.com/datasets/thedevastator/airbnb-price-determinants-in-europe) dataset can be found on Kaggle. The website also provides a descriptions of the data characteristics, possible dataset use cases and potential research ideas''')
 
     st.subheader('Other Areas to Investigate:')
-
-    my_text_other = "to be completed."
 
     st.markdown('''As the dataset contains cystomer satisfuction information, the next step could be to utilize Machine Learning Classifiers to study the relationship between the variables in the dataset and the custormer satisfaction. Such an alaysis could be useful for Airbnb owners who aim at optimizing different characteristics of their property to achive the maximum client satisfaction ''')
 
@@ -162,7 +161,7 @@ with tab2:
     # outliers=st.button('Show Outliers Analysis?')
     # if outliers:
      # select column to analize value_counts()
-    column_selection = st.selectbox("Select a column to analyze the number of unique values and distribution:", tuple(bnb_df.columns))
+    column_selection = st.selectbox("Select a Dataframe column to analyze the number of unique values and distribution:", tuple(bnb_df.columns))
     
     col1,col2 = st.columns(2, gap='large')
   
@@ -177,7 +176,7 @@ with tab2:
         st.plotly_chart(fig_hist,use_container_width=True)
 
     st.subheader('Listing Prices Outliers:')
-    st.caption('Please select a a **:blue[city]** in the sidebar.')
+    st.caption('Please select a a **:blue[city]** on the sidebar.')
     # city_selection = st.selectbox("Select a city to analyse further the listing price outliers:", tuple(bnb_df['city'].unique()))
 
     col1,col2 = st.columns(2, gap='large')
@@ -192,7 +191,7 @@ with tab2:
         fig.update_layout(showlegend=False)
         st.plotly_chart(fig_quantile,use_container_width=True)
 
-        st.caption('Based on the distribution analysis the lisiting prices above **:blue[650]** can be considered as outliers and will be removed for the Exploratory Data Analysis.')
+        st.caption('Based on the descriptive statistics of the Dataframe and on the distribution analysis the lisiting prices above **:blue[650]** can be considered as outliers and will be removed for the Exploratory Data Analysis.')
 
     with col2:
         # city_selection = st.selectbox("Select a city to analyse further the listing price outliers:", tuple(bnb_df['city'].unique()))
@@ -347,7 +346,7 @@ with tab4:
     with icon: 
         st.image('Images/house.png', use_column_width=True)
     with title:
-        st.title('Machine Learning and Price Prediction')
+        st.title('Machine Learning Model Selection')
     
     
     # st.markdown('#### Dataset Shape:')
@@ -357,7 +356,8 @@ with tab4:
     features_selection=df.drop(columns=['listing_price'])
 
     st.header('Features Selection:')
-    features_list=st.multiselect('Select Features to be included in ML:', features_selection.columns)
+
+    features_list=st.multiselect('Select Features to be included in ML:', features_selection.columns, default = list(features_selection.columns))
 
     features_df=df[features_list]
     target_col,features_col=st.columns([1,8])
@@ -576,3 +576,95 @@ with tab4:
 
             # save the emptu dataframe as csv for future reference:
             empty_df.to_csv(Path('./Resources/random_forest.csv'), encoding='utf-8', index=False)
+
+with tab5:
+
+    icon,title=st.columns([1,20])
+    with icon: 
+        st.image('Images/price.png', use_column_width=True)
+    with title:
+        st.title('Listing Price Predictor') 
+
+    st.subheader('Applying Saved Machine Learning Model to User Input to Predict a Listing Price:')
+    # response=st.radio('Chose a model to predict a listing price:', tuple(['Random Forest','Neural Network']))
+    st.markdown('**Select a model and provide input about your Airbnb on the Sidebar**')
+    if mlm_selection == 'Random Forest':
+        file_path = Path("./Resources/random_forest.csv")
+        # lod model
+        with open(Path('./Resources/random_forest.pkl'), 'rb') as file:
+                data=pickle.load(file)
+
+        loaded_model=data[ 'model']
+        enc=data[ 'encoder']
+        scaler=data[ 'scaler']
+    else: 
+        file_path = Path("./Resources/neural_network.csv")
+        # load model:
+        file_path = Path("./Resources/model.json")
+        with open(file_path, "r") as json_file:
+            model_json = json_file.read()
+        loaded_model = model_from_json(model_json)
+
+        # load weights into new model
+        file_path = "./Resources/model.h5"
+        loaded_model.load_weights(file_path)
+    
+    empty_df = get_data(file_path)
+    feater_columns = empty_df.columns.to_list()
+
+    st.subheader('Airbnb Characteristics (User Input Summary):')
+        
+    input_dict={}
+    st.sidebar.subheader('Airbnb Charcteristics:')
+    for column in feater_columns:
+        if column == "guest_satisfaction_overall":
+            input_dict[column] = st.sidebar.slider(column, min_value=1, max_value=100, value=90, step = 1)
+        elif column == "metro_distance":
+            input_dict[column] = st.sidebar.slider(column, min_value=0.01, max_value=14.99, value=1.01, step = 0.01)
+        elif column =="city_center_distance":
+            input_dict[column] = st.sidebar.slider(column, min_value=0.01, max_value=29.99, value=1.01, step = 0.01)
+        elif column in categorical_variables:
+            input_dict[column] =st.sidebar.selectbox(column, tuple(df[column].sort_values().unique()))          
+        else:
+            input_dict[column] =float(st.sidebar.selectbox(column, tuple(df[column].sort_values().unique())))
+
+    input_df=pd.DataFrame(data = input_dict, index=[0])
+     # st.write(input_df)
+    st.write(input_dict)
+
+    # Create a list of categorical variables 
+    categorical_variables = list(input_df.dtypes[df.dtypes == "object"].index)
+
+    # # Create a OneHotEncoder instance
+    # enc =OneHotEncoder(categories='auto', sparse=False)
+
+    # Encode the categorcal variables using OneHotEncoder
+    encoded_data =  enc.fit_transform(input_df[categorical_variables])
+
+    # Create a DataFrame with the encoded variables
+    encoded_df = pd.DataFrame(
+        encoded_data,
+        columns = enc.get_feature_names(categorical_variables)
+    )
+
+    # Add the numerical variables from the original DataFrame to the one-hot encoding DataFrame
+    encoded_df = pd.concat(
+        [
+            input_df.drop(columns = categorical_variables),
+            encoded_df
+        ],
+        axis=1
+    )
+
+    # Define the features as y and X:
+    X = encoded_df
+     # Review the features
+    st.dataframe(X)
+    X_scaled= scaler.transform(X)
+    st.dataframe(X_scaled)
+    # lisitng_price=loaded_model.predict(X_scaled)[0][0]
+
+    st.subheader('Listing Price Prediction:')
+    st.markdown(f'#### **Your Airbnb lisitjng price is predicted to be EUR: :blue[{50000}]**')
+    
+ 

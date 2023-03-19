@@ -101,6 +101,10 @@ with tab1:
 
 with tab2:
 
+    with st.expander("About Us"):
+        st.write("We offer our clients a tailored approach to constructing an investment portfolio based on their risk tolerance and personal cicumstances to absorbe the risk arising from the investment activities.")
+
+
     icon,title=st.columns([1,20])
     with icon: 
         st.image('Images/home.png', use_column_width=True)
@@ -128,6 +132,33 @@ with tab2:
 
     #modify columns with Boolean data:
     bnb_df['host_is_superhost']=bnb_df['host_is_superhost'].apply(lambda x:1 if x==True else 0)
+
+    # use bnb_df to get user input characteristics (features) for listing price prediction:
+    feater_columns = bnb_df.drop(columns=['listing_price']).columns.to_list()
+
+    categorical = list(bnb_df.dtypes[bnb_df.dtypes == "object"].index)
+    # create empty dictionary to store the user input   
+    input_dict={}
+    st.sidebar.subheader('Airbnb Charcteristics:')
+    for column in feater_columns:
+        if column == "guest_satisfaction_overall":
+            input_dict[column] = st.sidebar.slider(column, min_value=20, max_value=100, value=90, step = 1)
+        elif column == "metro_distance":
+            input_dict[column] = st.sidebar.slider(column, min_value=0.01, max_value=8.00, value=1.01, step = 0.01)
+        elif column =="city_center_distance":
+            input_dict[column] = st.sidebar.slider(column, min_value=0.01, max_value=15.00, value=1.01, step = 0.01)
+        elif column in categorical:
+            user_input =st.sidebar.selectbox(column, tuple(bnb_df[column].sort_values().unique()))
+            for char in  bnb_df[column].unique():
+                if char ==user_input:
+                    input_dict[column+'_'+char] = 1
+                else:
+                    input_dict[column+'_'+char] = 0 
+        else:
+            input_dict[column] =float(st.sidebar.selectbox(column, tuple(bnb_df[column].sort_values().unique())))
+   
+    # create a dataframe based on the user inlut about airbnb listing
+    input_df=pd.DataFrame(data = input_dict, index=[0])
 
     st.subheader('Modified Dataset (top 5 rows)')
     st.caption('NOTE: Redundant columns removed, descriptive names given to columns, boolean type columns modified.')
@@ -191,7 +222,7 @@ with tab2:
         fig.update_layout(showlegend=False)
         st.plotly_chart(fig_quantile,use_container_width=True)
 
-        st.caption('Based on the descriptive statistics of the Dataframe and on the distribution analysis the lisiting prices above **:blue[650]** can be considered as outliers and will be removed for the Exploratory Data Analysis.')
+        st.caption('Based on the descriptive statistics of the Dataframe and on the distribution analysis the lisiting prices above **:blue[500]** can be considered as outliers and will be removed for the Exploratory Data Analysis.')
 
     with col2:
         # city_selection = st.selectbox("Select a city to analyse further the listing price outliers:", tuple(bnb_df['city'].unique()))
@@ -211,7 +242,7 @@ with tab2:
         # st.write(bnb_df.loc[bnb_df['city']==city_selection]['listing_price'].quantile([0.01, 0.25, 0.5, 0.75, 0.99]))
     
     # remove outliers (listing prices above 650):
-    df=bnb_df.loc[bnb_df['listing_price']<=650]
+    df=bnb_df.loc[bnb_df['listing_price']<=500]
     df = df.reset_index(drop=True)
     st.markdown('#### Dataset Shape corrected for outliers:')
     st.write(df.shape,use_container_width=True)
@@ -295,7 +326,7 @@ with tab3:
         fig = px.imshow(corr_df.round(2), color_continuous_scale='Viridis', aspect="auto", text_auto=".2f")
         fig.update_xaxes(side="top")
         st.plotly_chart(fig,use_container_width=True)
-        st.caption('**NOTE: The correlation between the Target and the Features as well as between the Features is :blue[quite low]. Therefore, Neuaral Network and Random Forest Machine Learning Models will be selected.**')
+        st.caption('**NOTE: The correlation between the Target and the Features as well as between the Features is :blue[quite low]. Therefore, Neuaral Network and Random Forest Machine Learning Models will be selected. Also, as the correlation between the features is low, including all the features in the machine learning model  will likely result in smaller errors**')
 
     with col2:
         st.markdown(' ##### Features Correlations:')
@@ -368,11 +399,9 @@ with tab4:
         st.markdown('Features (bottom 5 rows):')
         st.dataframe(features_df.tail())
 
-    # create an empty dataframe to store the names of the selected columns
-    empty_df = pd.DataFrame(columns=features_df.columns)
 
     # Create a list of categorical variables 
-    categorical_variables = list(features_df.dtypes[df.dtypes == "object"].index)
+    categorical_variables = list(features_df.dtypes[features_df.dtypes == "object"].index)
 
     # Create a dataframewith categorical variables 
     df_categrical=features_df[categorical_variables]
@@ -410,15 +439,15 @@ with tab4:
     # Assign the function a random_state equal to 1
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=1)
 
-    # # Create a StandardScaler instance
-    # scaler =  StandardScaler()
+    # Create a StandardScaler instance
+    scaler =  StandardScaler()
 
-    # # Fit the scaler to the features training dataset
-    # X_scaler = scaler.fit(X_train)
+    # Fit the scaler to the features training dataset
+    X_scaler = scaler.fit(X_train)
 
-    # # Fit the scaler to the features training dataset
-    # X_train_scaled = X_scaler.transform(X_train)
-    # X_test_scaled = X_scaler.transform(X_test)
+    # Fit the scaler to the features training dataset
+    X_train_scaled = X_scaler.transform(X_train)
+    X_test_scaled = X_scaler.transform(X_test)
 
     create_model=st.button('Create Machine Learning Model?')
     if create_model:
@@ -426,17 +455,6 @@ with tab4:
             time.sleep(5)
 
         if mlm_selection =='Neural Network':
-            # Create a deep neural network by assigning the number of input features, the number of layers, and the number of neurons on each layer using Tensorflow’s Keras.
-
-                # Create a StandardScaler instance
-            scaler_nn =  StandardScaler()
-
-            # Fit the scaler to the features training dataset
-            X_scaler = scaler_nn.fit(X_train)
-
-            # Fit the scaler to the features training dataset
-            X_train_scaled = X_scaler.transform(X_train)
-            X_test_scaled = X_scaler.transform(X_test)
 
             # Define the the number of inputs (features) to the model
             number_input_features =  len(X_train.iloc[0])
@@ -514,18 +532,25 @@ with tab4:
             file_path = "./Resources/model.h5"
             nn.save_weights("./Resources/model.h5")
                     # save the features_df dataframe as csv for future reference:
-            features_df.to_csv(Path('./Resources/neural_network.csv'), encoding='utf-8', index=False)
+
+            # # Set the model's file path
+            # file_path = Path("./Resources/nn_model.h5")
+
+            # # Export your model to an HDF5 file
+            # nn.save(file_path)
+
+            encoded_df.to_csv(Path('./Resources/neural_network.csv'), encoding='utf-8', index=False)
 
         else:
-            # Create a StandardScaler instance
-            scaler_rf =  StandardScaler()
+            # # Create a StandardScaler instance
+            # scaler_rf =  StandardScaler()
 
-            # Fit the scaler to the features training dataset
-            X_scaler = scaler_rf.fit(X_train)
+            # # Fit the scaler to the features training dataset
+            # X_scaler = scaler_rf.fit(X_train)
 
-            # Fit the scaler to the features training dataset
-            X_train_scaled = X_scaler.transform(X_train)
-            X_test_scaled = X_scaler.transform(X_test)
+            # # Fit the scaler to the features training dataset
+            # X_train_scaled = X_scaler.transform(X_train)
+            # X_test_scaled = X_scaler.transform(X_test)
 
             # Create arandom forest regressor model
 
@@ -578,12 +603,13 @@ with tab4:
 
             # Save model
             # data = {'model': rf_model, 'encoder': enc, 'scaler': scaler_rf}
-            data = {'model': rf_model, 'scaler': scaler_rf}
+            data = {'model': rf_model, 'scaler': X_scaler}
             with open(Path('./Resources/random_forest.pkl'), 'wb') as file:
                 pickle.dump(data, file)
 
             # save the features_df dataframe as csv for future reference:
-            features_df.to_csv(Path('./Resources/random_forest.csv'), encoding='utf-8', index=False)
+            X.to_csv(Path('./Resources/rf.csv'), encoding='utf-8', index=False)
+            # st.dataframe(X)
 
 with tab5:
 
@@ -593,75 +619,92 @@ with tab5:
     with title:
         st.title('Listing Price Predictor') 
 
-    st.subheader('Applying Saved Machine Learning Model to User Input to Predict a Listing Price:')
-    # response=st.radio('Chose a model to predict a listing price:', tuple(['Random Forest','Neural Network']))
-    st.markdown('**Select a model and provide input about your Airbnb on the Sidebar**')
+    st.subheader('Applying Saved Machine Learning Model:')
+    st.markdown('**Random Forest Model showed to be superior to Neural Network in terms of producing smaller errors, as well as being less time consuming to run. Therefore, Random Forest will be used to generate Airbnb price prediction in this section.**')
+    st.markdown('**Provide information about your Airbnb on the Sidebar to predict the lising price**')
+    st.warning('**Please make sure the Random Forest model is saved in the Resources folder before predicting the price! If not saved, go to the Machine Learning tab and create the model.**')
+    st.error('**Do not start predicting before all the required Airbnb relating input is provided!**')
+    
+    agree = st.button('Predict listing price?')
+   
+    
+    # input_dict={}
+    # st.sidebar.subheader('Airbnb Charcteristics:')
+    # for column in feater_columns:
+    #     if column == "guest_satisfaction_overall":
+    #         input_dict[column] = st.sidebar.slider(column, min_value=20, max_value=100, value=90, step = 1)
+    #     elif column == "metro_distance":
+    #         input_dict[column] = st.sidebar.slider(column, min_value=0.01, max_value=5.00, value=1.01, step = 0.01)
+    #     elif column =="city_center_distance":
+    #         input_dict[column] = st.sidebar.slider(column, min_value=0.01, max_value=15.00, value=1.01, step = 0.01)
+    #     elif column in categorical_variables:
+    #         user_input =st.sidebar.selectbox(column, tuple(df[column].sort_values().unique()))
+    #         for char in  df[column].unique():
+    #             if char ==user_input:
+    #                 input_dict[column+'_'+char] = 1
+    #             else:
+    #                 input_dict[column+'_'+char] = 0 
+    #     else:
+    #         input_dict[column] =float(st.sidebar.selectbox(column, tuple(df[column].sort_values().unique())))
 
-    if mlm_selection == 'Random Forest':
-        file_path = Path("./Resources/random_forest.csv")
-         # lod model
+        # create_prediction=st.button('Predict listing price?')
+
+    # input_df=pd.DataFrame(data = input_dict, index=[0])
+
+
+
+
+    # X_final = input_df
+    # st.write(X_final)
+    # st.write(X_scaler.transform(X_final))
+    # one_row = input_df.iloc[0].values
+    # X_one_row = X_scaler.transform([one_row])
+    # st.write(X_one_row)
+
+    if agree:
+        # download the encoded complete features data to 1) align the selected features when generating the model and user inout and 2) train the scaler
+        file_path = Path("./Resources/rf.csv")
+    
+        predict_df = pd.read_csv(file_path)
+        model_features = predict_df.columns.to_list()
+        # st.write(model_features)
+        #adjust the columns of user input df to the features selected when creating the model:
+        input_df=input_df[model_features]
+        # st.dataframe(predict_df.tail())
+        # st.dataframe(input_df)
+        X_rf=predict_df
+
+        # Create a StandardScaler instance
+        scaler_rf =  StandardScaler().fit(X_rf)
+
+        # Fit the scaler to the features training dataset
+
+
+        # Fit the scaler to the features training dataset
+        X_rf_scaled = scaler_rf.transform(X_rf)
+        X_user = scaler_rf.transform(input_df)
+        # st.write(X_rf_scaled)
+        # st.write(X_user)
+
+        # load Random Forest model
         with open(Path('./Resources/random_forest.pkl'), 'rb') as file:
                 data=pickle.load(file)
 
-        loaded_model=data[ 'model']
-         # enc=data[ 'encoder']
-        scaler=data[ 'scaler']
-    else: 
-        file_path = Path("./Resources/neural_network.csv")
-         # load model:
-        file_path_model = Path("./Resources/model.json")
-        with open(file_path_model, "r") as json_file:
-            model_json = json_file.read()
-        loaded_model = model_from_json(model_json)
+        loaded_model=data['model']
 
-        # load weights into new model
-        file_pfile_path_model = "./Resources/model.h5"
-        loaded_model.load_weights(file_pfile_path_model)
-    
-    predict_df = get_data(file_path)
-    feater_columns = predict_df.columns.to_list()
-
-    st.subheader('Airbnb Characteristics (User Input Summary):')
-
-    input_dict={}
-    st.sidebar.subheader('Airbnb Charcteristics:')
-    for column in feater_columns:
-        if column == "guest_satisfaction_overall":
-            input_dict[column] = st.sidebar.slider(column, min_value=1, max_value=100, value=90, step = 1)
-        elif column == "metro_distance":
-            input_dict[column] = st.sidebar.slider(column, min_value=0.01, max_value=14.99, value=1.01, step = 0.01)
-        elif column =="city_center_distance":
-            input_dict[column] = st.sidebar.slider(column, min_value=0.01, max_value=29.99, value=1.01, step = 0.01)
-        elif column in categorical_variables:
-            user_input =st.sidebar.selectbox(column, tuple(df[column].sort_values().unique()))
-            for char in  df[column].unique():
-                if char ==user_input:
-                    input_dict[column+'_'+char] = 1
-                else:
-                    input_dict[column+'_'+char] = 0 
-        else:
-            input_dict[column] =float(st.sidebar.selectbox(column, tuple(df[column].sort_values().unique())))
-
-    create_prediction=st.button('Predict listing price?')
-    if create_prediction:
-        input_df=pd.DataFrame(data = input_dict, index=[0])
-        # st.write(input_df)
-        # st.write(input_dict)
-        # # Define the features as y and X:
-        X_final = input_df
-
-        st.markdown('Dataframe including prediction:')
-        # Make some predictions with the loaded model
-        input_df["predicted"] = loaded_model.predict(scaler.transform(X_final))
-        st.dataframe(input_df)
-
-        # X_one_row = scaler.transform([one_row]) # one row is not a 2D array. List around 1D array.
-        # st.write(X_one_row)
-        lisitng_price=input_df['predicted']
-
-        st.subheader('Listing Price Prediction:')
-        st.write(lisitng_price)
-        # if lisitng_price is not None:
-            # st.markdown(f'#### **Your Airbnb lisitjng price is predicted to be EUR: :blue{lisitng_price: .2f}**')
-            
+        
+        # st.write(X_scaler.transform(X_final))
+        one_row = input_df.iloc[0].values
+        X_one_row = scaler_rf.transform([one_row])
+        lisitng_price=loaded_model.predict(X_one_row)[0]
+        input_df["predicted"] = loaded_model.predict(X_user)
+                    
+        col1,col2=st.columns(2, gap='large')
+        with col1:
+            st.markdown(f'#### **Your Airbnb lisitjng price is predicted to equal EUR: :blue{lisitng_price: .2f}**')
+        with col2:
+            st.markdown('Airbnb Characteristics (including predicted price):')
+            st.dataframe(input_df.T, use_container_width=True)
+        
+                
     

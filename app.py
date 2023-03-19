@@ -4,28 +4,18 @@ from pathlib import Path
 
 import chart_studio.plotly as py
 import cufflinks as cf
-import hvplot.pandas
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-import seaborn as sns
 import streamlit as st
 import tensorflow as tf
-from plotly.offline import download_plotlyjs, init_notebook_mode, plot
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+from sklearn.metrics import mean_absolute_error, mean_squared_error
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder, OneHotEncoder, StandardScaler
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from tensorflow.keras.layers import Dense
 from tensorflow.keras.models import Sequential, model_from_json
-
-# init_notebook_mode(connected=True)
-# cf.go_offline()
-
-#create internet page name
-# st.set_page_config(page_title="AirBnB Price Prediction with ML", layout='wide', initial_sidebar_state="collapsed")
 
 st.set_page_config(page_title="AirBnB Price Prediction with ML", layout='wide')
 
@@ -40,8 +30,6 @@ bnb_df=df_original.copy()
 bnb_df_map=bnb_df.loc[bnb_df['realSum']<=500]
 
 with st.sidebar:
-    # with st.spinner('Application running, please wait'):
-    #     time.sleep(25)
     st.subheader('Data Analysis')
     city_selection = st.selectbox("Select a city for data analysis (when required):", tuple(bnb_df['city'].unique()))
 
@@ -66,6 +54,8 @@ with tab1:
         st.image('Images/bnb.png', use_column_width=True)
     with title:
         st.title('Airbnb Price Prediction (European cities)')
+
+    st.markdown('**Please select a a :blue[city] in the sidebar to explore Airbnb interactive map by location.**')
 
     fig_map = px.density_mapbox(bnb_df_map.loc[bnb_df_map['city']==city_selection], lat = 'lat', lon = 'lng', z = 'realSum', radius = 10, center = dict(lat=bnb_df_map.loc[bnb_df['city']==city_selection]['lat'].mean(), lon = bnb_df_map.loc[bnb_df['city']==city_selection]['lng'].mean()),
                                 zoom = 11, hover_name='room_type', mapbox_style = 'open-street-map',
@@ -101,25 +91,19 @@ with tab1:
 
 with tab2:
 
-    with st.expander("About Us"):
-        st.write("We offer our clients a tailored approach to constructing an investment portfolio based on their risk tolerance and personal cicumstances to absorbe the risk arising from the investment activities.")
-
-
     icon,title=st.columns([1,20])
     with icon: 
         st.image('Images/home.png', use_column_width=True)
     with title:
         st.title('Initial Data Analysis')
 
+    with st.expander("About this section"):
+        st.markdown("Initial Data Analysis begins with demonstrating the original dataset. It then continues by showing the progress in data cleansing - removing redundant features, giving columns more descriptive names, analizing the descriptive statistics of the data, its shape, checking for missing values duplicates and the types of data prsent in the dataset. The section continues with univariate analysis of the features and focuses on the outliers for our target variable _lisitng price_. The correction for outliers is suggested and the dataset after the correction is demostrated breaking the information by city.")
 
     st.header('Original Data Review and Cleansing:')
-    # df_original = get_data()
 
     st.subheader('Original Dataset (top 5 rows) :')
     st.dataframe(df_original.head(),use_container_width=True)
-
-    #make a copy of the original dataframe
-    # bnb_df=df_original.copy()
 
     # remove redundant columns
     bnb_df=bnb_df.drop(columns=['room_shared','room_private','attr_index','attr_index_norm','rest_index','rest_index_norm', 'lng', 'lat'])
@@ -189,9 +173,7 @@ with tab2:
         st.caption('There are three columns with cathegorical data: day_of_week, room_type and city, which is in line with expectations.')
     
     st.subheader('Data Distirbution and Outliers:')
-    # outliers=st.button('Show Outliers Analysis?')
-    # if outliers:
-     # select column to analize value_counts()
+
     column_selection = st.selectbox("Select a Dataframe column to analyze the number of unique values and distribution:", tuple(bnb_df.columns))
     
     col1,col2 = st.columns(2, gap='large')
@@ -212,12 +194,7 @@ with tab2:
 
     col1,col2 = st.columns(2, gap='large')
     with col1:
-        # price_outliers=px.violin(bnb_df, x='city', y='listing_price', box=True, 
-        #         color='day_of_week', points='all', hover_data=bnb_df.columns,
-        #         labels={'city': 'City','listing_price': 'Listing Price' }, title = 'Listing Price Distribution per city')
-        # st.plotly_chart(price_outliers,use_container_width=True)
-        # st.markdown(f' ##### Total Listing Price Quantiles')
-        # st.write(bnb_df['listing_price'].quantile([0.01, 0.25, 0.5, 0.75, 0.99]))
+
         fig_quantile=px.bar(bnb_df.loc[bnb_df['city']==city_selection]['listing_price'].quantile([0.01, 0.25, 0.5, 0.75, 0.99]),labels={'index': 'Quantile', 'value': 'Listing Price' }, title = city_selection + ' - Listing Price Quantile Distribution')
         fig.update_layout(showlegend=False)
         st.plotly_chart(fig_quantile,use_container_width=True)
@@ -225,7 +202,6 @@ with tab2:
         st.caption('Based on the descriptive statistics of the Dataframe and on the distribution analysis the lisiting prices above **:blue[500]** can be considered as outliers and will be removed for the Exploratory Data Analysis.')
 
     with col2:
-        # city_selection = st.selectbox("Select a city to analyse further the listing price outliers:", tuple(bnb_df['city'].unique()))
 
         fig_city=go.Figure()
         fig_city.add_trace(go.Violin(x=bnb_df['city'][bnb_df['city']==city_selection],
@@ -239,7 +215,6 @@ with tab2:
         fig_city.update_layout(title=city_selection +' City Violin Plot', yaxis_title='Listing Price')
         st.plotly_chart(fig_city,use_container_width=True)
         st.markdown(f' ##### {city_selection} Listing Price Quantiles')
-        # st.write(bnb_df.loc[bnb_df['city']==city_selection]['listing_price'].quantile([0.01, 0.25, 0.5, 0.75, 0.99]))
     
     # remove outliers (listing prices above 650):
     df=bnb_df.loc[bnb_df['listing_price']<=500]
@@ -254,13 +229,6 @@ with tab2:
    
     
 with tab3:
-    # # Create a list of categorical variables 
-    # categorical_variables = list(df.dtypes[df.dtypes == "object"].index)
-    # # Create a dataframewith categorical variables 
-    # df_categrical=df[categorical_variables]
-    
-    # # Create a dDataframe with non-categorical variables:
-    # df_numerical=df.drop(columns = categorical_variables)
 
     icon,title=st.columns([1,20])
     with icon: 
@@ -268,6 +236,8 @@ with tab3:
     with title:
         st.title('Exploratory Data Analysis')
 
+    with st.expander("About this section"):
+        st.markdown("Exploratory Data Analysis continues checking the data but this time focusing on the bilateral and multilateral relationship between the features and the target as well as between different features, including categorical/numerical and numerical/numerical analysis. The conclusions are drawn and mentioned at the end of the section.")
 
     st.subheader('Listing Price and Categorical Features Analysis (per City by Day of Week or Room Type):')
 
@@ -288,18 +258,17 @@ with tab3:
         st.plotly_chart(city_room_fig,use_container_width=True)
 
     st.subheader(city_selection +' Listing Price (Target) / Features Regression Analysis:')
-    st.caption('**Please select a a :blue[city] in the sidebar.**')
+    st.markdown('**Please select a a :blue[city] in the sidebar.**')
     df_city=df.loc[df['city']==city_selection]
 
     col1,col2=st.columns([1,4])
     columns_list=['day_of_week','host_is_superhost','multiple_rooms ',' business_facilities']
     xscale_list=['person_capacity','cleanliness_rating','guest_satisfaction_overall','bedrooms_quantity', 'city_center_distance', 'metro_distance']
-    # df_regression=df.copy()
 
     with col1:
         x_scale = st.selectbox("Select a feature for x scale:", tuple(xscale_list))
         z_scale = st.selectbox("Select a feature for columns:", tuple(columns_list))
-        # color = st.selectbox("Select a feature for color:", tuple(df['city'].columns))
+
     with col2:
         
         fig_regression=px.scatter(df_city, x=x_scale, y='listing_price', color = df_city['room_type'], hover_data=['guest_satisfaction_overall','listing_price','bedrooms_quantity','cleanliness_rating'],
@@ -308,20 +277,13 @@ with tab3:
               facet_col=z_scale, title='Target/Feature Regression Analysis')
 
         st.plotly_chart(fig_regression,use_container_width=True)    
-
-       # fig_regression_features=px.scatter(df_city, x=x_scale, y=y_scale,  hover_data=['guest_satisfaction_overall','listing_price','bedrooms_quantity','cleanliness_rating'],
-        #    labels={'room_type' : 'Room Type','listing_price': 'Listing Price', 'day_of_week': 'Day of Week', 'bedrooms_quantity':'Number of Bedrooms'}, title='Features Regression Analysis')
-
-    
+   
     st.subheader(city_selection+  ' Listing Price (Target) / Features Correlation Analysis:')
     
     col1,col2 = st.columns(2, gap='large')
     with col1:
         corr_df = df_city.corr()[['listing_price']].sort_values(by='listing_price', ascending=False)
-        # fig_corr=plt.figure()
-        # sns.heatmap(corr_df.round(2), annot=True, vmin=-1, vmax=1, center =0, cmap='vlag')
-        # sns.set_theme(style='dark')
-        # st.pyplot(fig_corr,use_container_width=True)  
+
         st.markdown(' ##### Target/Features Correlations:')
         fig = px.imshow(corr_df.round(2), color_continuous_scale='Viridis', aspect="auto", text_auto=".2f")
         fig.update_xaxes(side="top")
@@ -332,15 +294,8 @@ with tab3:
         st.markdown(' ##### Features Correlations:')
 
         corr_m = df_city.corr()
-        # fig_corr=plt.figure()
-        # sns.heatmap(corr_m.round(2), annot=True, vmin=-1, vmax=1, center =0, cmap='vlag')
-        # sns.set_theme(style='dark')
-        # st.pyplot(fig_corr,use_container_width=True)  
 
-        # fig = px.imshow(corr_m.round(2), color_continuous_scale='Viridis', aspect="auto", text_auto=".2f")
-        # fig.update_xaxes(side="top")
-
-        # Correlation
+         # Correlation
         df_corr =corr_m.round(2)
         # Mask to matrix
         mask = np.zeros_like(df_corr, dtype=bool)
@@ -350,28 +305,7 @@ with tab3:
         fig = px.imshow(df_corr_viz, text_auto=True, color_continuous_scale='Viridis')
         # fig.update_xaxes(side="top")
         st.plotly_chart(fig,use_container_width=True) 
-    # with col1:
-    #     x_scale = st.selectbox("Select a feature for x scale:", tuple(bnb_df.columns))
-    #     y_scale = st.selectbox("Select a feature for y scale:", tuple(bnb_df.columns))
-    #     z_scale = st.selectbox("Select a feature for z scale:", tuple(bnb_df.columns))
-    #     color = st.selectbox("Select a feature for color:", tuple(bnb_df.columns))
-    # with col2:
-    #     fig_3d = px.scatter_3d(df, x=x_scale, y=y_scale,  z=z_scale, color = color, opacity=0.7, hover_data=['guest_satisfaction_overall','listing_price','bedrooms_quantity','cleanliness_rating'],
-    #         labels={'room_type' : 'Room Type', 'listing_price': 'Listing Price' })
-    #     st.plotly_chart(fig_3d,use_container_width=True)
-    # city_selection2 = st.selectbox("Select a city:", tuple(df['city'].unique()))
-    # st.markdown(' ####  Day of Week:')
-    # weekday_selection = st.selectbox("Select a day of week :", tuple(df['day_of_week'].unique()))
-    # st.markdown(' #### Select Room Type:')
-    # room_selection = st.selectbox("Select a room type :", tuple(df['room_type'].unique()))
-
-    # st.header('Original Data Review and Cleansing:')
-
-
-
-
-
-    
+     
 with tab4:
     icon,title=st.columns([1,20])
     with icon: 
@@ -379,9 +313,12 @@ with tab4:
     with title:
         st.title('Machine Learning Model Selection')
     
-    
+    with st.expander("About this section"):
+        st.markdown("Machine Learning section allows the user to select and calibrate a machine learning model by adjusting the features of the dataset to be included in the machine learning and the machine learning parameters. The section proceded with training the selected model, predicting the results and evaluating the model performance. The predictions are then copared to the actual lisitng prices and the model is saved. Different models evaluation metices can be compared and a better performing model is selected for the price predictions based on those evaluations.")
+
+
     df_predict=df.copy()
-    # st.write(df.tail(),use_container_width=True)
+
     y = df['listing_price']
 
     features_selection=df.drop(columns=['listing_price'])
@@ -531,27 +468,10 @@ with tab4:
             # Save weights
             file_path = "./Resources/model.h5"
             nn.save_weights("./Resources/model.h5")
-                    # save the features_df dataframe as csv for future reference:
-
-            # # Set the model's file path
-            # file_path = Path("./Resources/nn_model.h5")
-
-            # # Export your model to an HDF5 file
-            # nn.save(file_path)
-
+   
             encoded_df.to_csv(Path('./Resources/neural_network.csv'), encoding='utf-8', index=False)
 
         else:
-            # # Create a StandardScaler instance
-            # scaler_rf =  StandardScaler()
-
-            # # Fit the scaler to the features training dataset
-            # X_scaler = scaler_rf.fit(X_train)
-
-            # # Fit the scaler to the features training dataset
-            # X_train_scaled = X_scaler.transform(X_train)
-            # X_test_scaled = X_scaler.transform(X_test)
-
             # Create arandom forest regressor model
 
             rf_model = RandomForestRegressor(max_depth=max_depth, n_estimators=n_estimators, random_state=1)
@@ -619,6 +539,9 @@ with tab5:
     with title:
         st.title('Listing Price Predictor') 
 
+    with st.expander("About this section"):
+        st.markdown("Listing Price Prediction takes the users input about threir airbnb property and applies the model created in the Machine Learning section to predict the listing price. User inputs are also demonstrated next to the predicted price.")
+
     st.subheader('Applying Saved Machine Learning Model:')
     st.markdown('**Random Forest Model showed to be superior to Neural Network in terms of producing smaller errors, as well as being less time consuming to run. Therefore, Random Forest will be used to generate Airbnb price prediction in this section.**')
     st.markdown('**Provide information about your Airbnb on the Sidebar to predict the lising price**')
@@ -626,40 +549,6 @@ with tab5:
     st.error('**Do not start predicting before all the required Airbnb relating input is provided!**')
     
     agree = st.button('Predict listing price?')
-   
-    
-    # input_dict={}
-    # st.sidebar.subheader('Airbnb Charcteristics:')
-    # for column in feater_columns:
-    #     if column == "guest_satisfaction_overall":
-    #         input_dict[column] = st.sidebar.slider(column, min_value=20, max_value=100, value=90, step = 1)
-    #     elif column == "metro_distance":
-    #         input_dict[column] = st.sidebar.slider(column, min_value=0.01, max_value=5.00, value=1.01, step = 0.01)
-    #     elif column =="city_center_distance":
-    #         input_dict[column] = st.sidebar.slider(column, min_value=0.01, max_value=15.00, value=1.01, step = 0.01)
-    #     elif column in categorical_variables:
-    #         user_input =st.sidebar.selectbox(column, tuple(df[column].sort_values().unique()))
-    #         for char in  df[column].unique():
-    #             if char ==user_input:
-    #                 input_dict[column+'_'+char] = 1
-    #             else:
-    #                 input_dict[column+'_'+char] = 0 
-    #     else:
-    #         input_dict[column] =float(st.sidebar.selectbox(column, tuple(df[column].sort_values().unique())))
-
-        # create_prediction=st.button('Predict listing price?')
-
-    # input_df=pd.DataFrame(data = input_dict, index=[0])
-
-
-
-
-    # X_final = input_df
-    # st.write(X_final)
-    # st.write(X_scaler.transform(X_final))
-    # one_row = input_df.iloc[0].values
-    # X_one_row = X_scaler.transform([one_row])
-    # st.write(X_one_row)
 
     if agree:
         # download the encoded complete features data to 1) align the selected features when generating the model and user inout and 2) train the scaler

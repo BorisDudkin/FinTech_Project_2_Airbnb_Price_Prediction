@@ -2,8 +2,10 @@ import pickle
 import time
 from pathlib import Path
 
+import blosc
 import chart_studio.plotly as py
 import cufflinks as cf
+import mgzip
 import numpy as np
 import pandas as pd
 import plotly.express as px
@@ -162,7 +164,7 @@ with tab2:
 
     # display top five rows of the modified dataset after removing redundant columns and changing column names
     st.subheader('Modified Dataset (top 5 rows)')
-    st.caption('NOTE: Redundant columns removed, descriptive names given to columns, boolean type columns modified.')
+    st.markdown('NOTE: Redundant columns removed, descriptive names given to columns, boolean type columns modified.')
     st.dataframe(bnb_df.head(),use_container_width=True)
 
     #show descriptive statistics of the dataset
@@ -176,19 +178,19 @@ with tab2:
     with col1:
         st.markdown('#### Dataset Shape:')
         st.write(bnb_df.shape,use_container_width=True)
-        st.caption('The modified dataset has 51,707 rows and 13 columns.')
+        st.markdown('The modified dataset has 51,707 rows and 13 columns.')
     with col2:
         st.markdown(' #### Duplicated Rows:')
         st.write(bnb_df.duplicated().sum(),use_container_width=True)
-        st.caption('There are no duplicated rows.')
+        st.markdown('There are no duplicated rows.')
     with col3:
         st.markdown(' #### Misssing Values:')
         st.write(bnb_df.isnull().sum(),use_container_width=True)
-        st.caption('There are no missing values.')
+        st.markdown('There are no missing values.')
     with col4:
         st.markdown(' #### Columns Datatypes:')
         st.write(bnb_df.dtypes,use_container_width=True)
-        st.caption('There are three columns with cathegorical data: day_of_week, room_type and city, which is in line with expectations.')
+        st.markdown('There are three columns with cathegorical data: day_of_week, room_type and city, which is in line with expectations.')
     
     #conduct univariate analysis of data to check for data distribution and outliers
     st.subheader('Data Distirbution and Outliers:')
@@ -208,7 +210,7 @@ with tab2:
 
     # conduct bivariate(categorical/numerical analysis of lisitng prices per city to check for outliers)
     st.subheader('Listing Prices Outliers:')
-    st.caption('Please select a a **:blue[city]** on the sidebar.')
+    st.markdown('Please select a a **:blue[city]** on the sidebar.')
 
     col1,col2 = st.columns(2, gap='large')
     with col1:
@@ -218,7 +220,7 @@ with tab2:
         st.plotly_chart(fig_quantile,use_container_width=True)
 
         # draw conclusion from these analysis
-        st.caption('Based on the descriptive statistics of the Dataframe and on the distribution analysis the lisiting prices above **:blue[500]** can be considered as outliers and will be removed for the Exploratory Data Analysis.')
+        st.markdown('Based on the descriptive statistics of the Dataframe and on the distribution analysis the lisiting prices above **:blue[500]** can be considered as outliers and will be removed for the Exploratory Data Analysis.')
 
     with col2:
 
@@ -313,7 +315,7 @@ with tab3:
         fig = px.imshow(corr_df.round(2), color_continuous_scale='Viridis', aspect="auto", text_auto=".2f")
         fig.update_xaxes(side="top")
         st.plotly_chart(fig,use_container_width=True)
-        st.caption('**NOTE: The correlation between the Target and the Features as well as between the Features is :blue[quite low]. Therefore, Neuaral Network and Random Forest Machine Learning Models will be selected. Also, as the correlation between the features is low, including all the features in the machine learning model  will likely result in smaller errors**')
+        st.markdown('**NOTE: The correlation between the Target and the Features as well as between the Features is :blue[quite low]. Therefore, Neuaral Network and Random Forest Machine Learning Models will be selected. Also, as the correlation between the features is low, including all the features in the machine learning model  will likely result in smaller errors**')
 
     # analyse correlation between the features
     with col2:
@@ -552,9 +554,13 @@ with tab4:
 
             # Save model
             # data = {'model': rf_model, 'encoder': enc, 'scaler': scaler_rf}
-            data = {'model': rf_model, 'scaler': X_scaler}
-            with open(Path('./Resources/random_forest.pkl'), 'wb') as file:
-                pickle.dump(data, file)
+            data = {'model': rf_model}
+            with mgzip.open('./Resources/random_forest.pkl', 'wb') as f:
+                pickle.dump(data, f)
+            
+            
+            # with open(Path('./Resources/random_forest.pkl'), 'wb') as file:
+            #     pickle.dump(data, file)
 
             # save encoded dataframe to have the list of the features corresponding to the tranied model
             X.to_csv(Path('./Resources/rf.csv'), encoding='utf-8', index=False)
@@ -600,8 +606,11 @@ with tab5:
         X_user = scaler_rf.transform(input_df)
 
         # load Random Forest model
-        with open(Path('./Resources/random_forest.pkl'), 'rb') as file:
-                data=pickle.load(file)
+        with mgzip.open('./Resources/random_forest.pkl', 'rb') as f:
+            data = pickle.load(f)
+
+        # with open(Path('./Resources/random_forest.pkl'), 'rb') as file:
+        #         data=pickle.load(file)
 
         loaded_model=data['model']
 

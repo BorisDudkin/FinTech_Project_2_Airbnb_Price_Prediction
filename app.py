@@ -237,7 +237,7 @@ with tab3:
         st.title('Exploratory Data Analysis')
 
     with st.expander("About this section"):
-        st.markdown("Exploratory Data Analysis continues checking the data but this time focusing on the bilateral and multilateral relationship between the features and the target as well as between different features, including categorical/numerical and numerical/numerical analysis. The conclusions are drawn and mentioned at the end of the section.")
+        st.markdown("Exploratory Data Analysis continues checking the data but this time focusing on the bivariate and multivariate relationship between the features and the target as well as between different features, including categorical/numerical and numerical/numerical analysis. The conclusions are drawn and mentioned at the end of the section.")
 
     st.subheader('Listing Price and Categorical Features Analysis (per City by Day of Week or Room Type):')
 

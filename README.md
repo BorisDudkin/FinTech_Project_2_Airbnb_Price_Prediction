@@ -1,10 +1,10 @@
-# Investment Advisor
+# Airbnb Listing Price Predictor
 
-### The Investment Advisor was developed to help empower potential investors by providing portfolio suggestions from just a few questions about income and attitude towards investment.The Investment Advisor application will assess an investor's risk tolerance and his/her's capacity to absorb risk. Based on those evaluations, two corresponding risk scores will be calculated and associated investment portfolios will be chosen from our ETFs offering. A third 'Cryptomix' portfolio including cryptocurrency assets will also be included. Their performance will be assessed and compared to the Benchmark portfolio of 40% Bonds 60% Stocks.
+### One of the critical components determining business competitiveness is a sound pricing strategy. New businesses need to set a right price to be able to enter the market, while both new and existing companies use pricing as one of their marketing mix tools to stay competitive and optimize their revenues.<br/> Airbnb Price Predictor, powered by Machine Learning Models and various data analysis techniques, provides Airbnb owners with a a price predicting tool based on their properties characteristics. The tool also allows the property owners to understand the interdependencies between the different components of their offerings.<br/> This application can also be used the travelers, who would like to estimate the Airbnb prices in their trip destination.
 
 ---
 
-![ETF](Images/Inv_advice.png)
+![airbnb](Images/airbnb.jpg)
 
 ---
 
@@ -22,8 +22,6 @@
 
 `Python 3.9`
 
-`Jupyter lab`
-
 _Libraries_
 
 1. `Pandas` is a Python package that provides fast, flexible, and expressive data structures designed to make working with large sets of data easy and intuitive.
@@ -33,57 +31,50 @@ _Libraries_
 2. `PyViz` is a Python visualization package that provides a single platform for accessing multiple visualization libraries. The visualization libraries used in this application are listed below: <br/>
 
    - [PyViz ](https://pyviz.org/) - for guidance on how to start visualization, interactive visualization, styles and layouts customization.
-   - [Bokeh](https://bokeh.org/) - is an open source vizualization library that allows developers to create interactive plots. 
-   - [Holoviews](https://holoviews.org/) - is an open source vizualization library that allows developers to create interactive plots, designed to interact with tabular data. 
+
    - [Plotly](https://plotly.com/) - is a library that allows developers to build interactive charts, tables and graphs from data.
 
-3. `SQLAlchemy` is an open-source SQL library for Python. It is designed to ease the communication between Python-based programs and databases"
-
-   - [SQLAlchemy ](https://www.sqlalchemy.org/) - for information on the library, its features and installation instructions.<br/>
-
-4. `Streamlit` is a library that allows developers to build web applications with live user input.
+3. `Streamlit` is a library that allows developers to build web applications with live user input.
 
    - [Streamlit](https://streamlit.io/) - to read more about deploying, installing and customizing.<br/>
-   
-5. `NumPy` is an open source library that adds computational tools to a project, including mathematical functions and random number generators.
+
+4. `NumPy` is an open source library that adds computational tools to a project, including mathematical functions and random number generators.
 
    - [Numpy](https://numpy.org/) - to read about available functions and installation.<br/>
-   
-6. `Python-dotenv` is a library that adds functions to read locally stored .env files.
 
-   - [python-dotenv](https://pypi.org/project/python-dotenv/) - to read about installation and usage.<br/>
-   
-7. `Alpaca` is a company that creates API-centered tools to trade stocks and buy cryptocurrency.
+5. `Scikit-learn` is a simple and efficient tools for predictive data analysis. It is built on NumPy, SciPy, and matplotlib.
 
-   - [Alpaca](https://alpaca.markets/) - to sign up and read about installation and usage.<br/>
-   
- 
+   - [scikit-learn ](https://scikit-learn.org/stable/) - for information on the library, its features and installation instructions.<br/>
+
 ---
 
 ## Installation Guide
 
-To run this program the application must be started from the terminal using Streamlit.<br/> A .env file must also be written and stored in the local directory before running the program according to the instructions below.<br/> Once the installations below are completed and the .env file has been made, navigate to the folder containing the application and run the following command in your terminal to launch the program:
+The application must be started from the terminal using Streamlit, once in the directory of the application:<br/>
 
 ```python
-streamlit run investment_app.py
+streamlit run app.py
 ```
-
-Jupyter lab is the preferred software to work with this application.<br/> Jupyter lab is a part of the **[anaconda](https://www.anaconda.com/)** distribution package and therefore it is recommended to download **anaconda** first.<br/> Once downloaded, run the following command in your terminal to launch Jupyter lab:
-
-```python
-jupyter lab
-```
-### Creating the .env file
-To create the .env file, open a .txt document and type in your keys from the Alpaca dashboard after creating an account in the following format:
-
-![env](Images/env.PNG)
-
-Rename the text file to .env and save the file to the 'Boris' Directory after selecting 'All Files':
-
-![env_save](Images/env_save.PNG)
 
 ### Library Installations
+
 Before using the application first install the following dependencies by using your terminal:
+
+> Option 1 - Intsall needed libraries with requirements.txt file included in the reporsitory. For this option:<br/>
+
+- install [pipreqs](https://pypi.org/project/pipreqs/):
+
+  ```python
+  pip install pipreqs
+  ```
+
+- Install all libraries that we have in requirements.txt::
+
+  ```python
+  pip install -r requirements.txt:
+  ```
+
+> Option 2 - Install each library individually:<br/>
 
 To install pandas run:
 
@@ -104,29 +95,13 @@ conda install -c pyviz bokeh holoviews plotly
 ```
 
 Confirm the installation of all the PyViz packages by running the following commands in Terminal:
+
 ```python
 conda list pyviz
 ```
-```python
- conda list bokeh
-```
-```python
- conda list holoviews
-```
+
 ```python
  conda list plotly
-```
-
-To install SQLAlchemy, in Terminal run:
-
-```python
-pip install SQLAlchemy
-```
-
-Confirm the installation of the SQLAlchemy package by running the following commands in Terminal:
-
-```python
- conda list sqlalchemy
 ```
 
 To install Streamlit, in Terminal run:
@@ -141,18 +116,6 @@ Confirm the installation of the Streamlit package by running the following comma
  conda list streamlit
 ```
 
-To install python-dotenv, in Terminal run:
-
-```python
-pip install python-dotenv
-```
-
-Confirm the installation of the python-dotenv package by running the following commands in Terminal:
-
-```python
- conda list python-dotenv
-```
-
 To install numpy, in Terminal run:
 
 ```python
@@ -165,10 +128,11 @@ Confirm the installation of the numpy package by running the following commands 
  conda list numpy
 ```
 
-To install the Alpaca Trade API, in Terminal run:
+To install scikit library, in Terminal run:
 
 ```python
-pip3 install alpaca-trade-api
+# PuPi
+pip install -U scikit-learn
 ```
 
 Confirm the installation of the Alpaca Trade API package by running the following command in Terminal:
@@ -176,39 +140,48 @@ Confirm the installation of the Alpaca Trade API package by running the followin
 ```python
  conda list alpaca-trade-api
 ```
+
 ---
 
 ## Usage
 
 > Application summary<br/>
 
-The Investment Advisor tool helps investors make educated decisions based on their risk capacity and risk tolerance, just by asking a few questions.<br/>
-Furthermore, Streamlit library transforms Investment Advisor into an interactive web application that nontechnical users without any coding experience can use.<br/> Answer a few questions about your income and attitude towards investment, and the application will provide three portfolio recommendations as well as a benchmark portfolio
+The Airbnb Price Predictor provides tools needed to analyse Airbnb related data and arrive at a property price with the help of Machine Learning Models.<br/>
+Furthermore, Streamlit library transforms Airbnb Price Predictor into an interactive web application that nontechnical users without any coding experience can use.<br/>Finally, the tool takes the users through the whole experience of applying the Machine Learning techniques to a dataset.<br/>The following parts are covered:
 
-- The analysis begins by asking the user some questions:<br/>
-  ![questionnaire](Images/questionnaire.PNG)<br/>
-- Next, risk capacity and risk tolerance scores are calculated:<br/>
-  ![risk_scores](Images/risk_scores.PNG)<br/>
-- The calculated portfolios can be compared side by side at a glance:<br/>
-  ![portfolios_comparison](Images/portfolios_comparison.PNG)<br/>
-- You can find more details about each portfolio by using a dropdown menu:<br/>
-  ![portfolio_composition](Images/portfolio_composition.PNG)<br/>
-- The historical performance of each asset is shown to the user in an easy to read chart:<br/>
-  ![historical_performance](Images/historical_performance.PNG)<br/>
-- A Monte Carlo simulation can be run on each portfolio selected, and the estimated returns will be displayed:<br/>
-  ![simulation_1](Images/simulation_1.PNG)<br/>
-  ![simulation_2](Images/simulation_2.PNG)<br/>
+- Introduction:<br/>
 
+  - Introduction section provide information about the project, project's objective, dataset and also suggests other areas for future research.<br/>
 
+    ![](Images/Introduction.gif)
 
-https://user-images.githubusercontent.com/118786747/215371133-e1c822cd-d054-4f2e-80d0-c34880016df5.mp4
+- Original Data Review and Cleansing:<br/>
 
+  - Initial Data Analysis begins with demonstrating the original dataset. It then continues by showing the progress in data cleansing - removing redundant features, giving columns more descriptive names, analizing the descriptive statistics of the data, its shape, checking for missing values duplicates and the types of data prsent in the dataset. The section continues with univariate analysis of the features and focuses on the outliers for our target variable _lisitng price_. The correction for outliers is suggested and the dataset after the correction is demostrated breaking down the information by city.<br/>
+    ![](Images/Initial_data_analysis.gif)
 
+- Exploratory Data Analysis:<br/>
+
+  - Exploratory Data Analysis continues researching the data but this time focusing on the bivariate and multivariate relationship between the features and the target, as well as between different features, including categorical/numerical and numerical/numerical analysis. The conclusions are drawn and mentioned at the end of the section.<br/>
+    ![](Images/Exploratory_data.gif)
+
+- Machine Learning Model Selection:<br/>
+
+  - Machine Learning section allows the user to select and calibrate a machine learning model by adjusting the features of the dataset to be included in the machine learning and the machine learning parameters. The section proceded with training the selected model, predicting the results and evaluating the model performance. The predictions are then copared to the actual lisitng prices and the model is saved. Different models evaluation metices can be compared and a better performing model is selected for the price predictions based on those evaluations.<br/>
+    ![](Images/ML_1.gif)
+    Evaluation and Prediction:
+    ![](Images/ML_2.gif)
+
+- Listing Price Predictor:<br/>
+
+  - Listing Price Prediction takes the users input about threir airbnb property and applies the model created in the Machine Learning section to predict the listing price. User inputs are also demonstrated next to the predicted price.<br/>
+    ![](Images/price_predict.gif)
 
 > Getting started<br/>
 
-- To use the Investment Advisor first clone the repository to your PC.<br/>
-- Use `streamlit run investment_app.py` as per the instructions in the [Installation Guide](#installation-guide) to run the application.<br/>
+- To use the Airbnb Price Predictor first clone the repository to your PC.<br/>
+- Use `streamlit run app.py` as per the instructions in the [Installation Guide](#installation-guide) to run the application.<br/>
 
 ---
 
@@ -220,15 +193,6 @@ Boris Dudkin:
 
 - [Email](boris.dudkin@gmail.com)
 - [LinkedIn](www.linkedin.com/in/Boris-Dudkin)
-
-Brian Wander:
-
-- [Email](brianwander101@gmail.com)
-
-Adam Jimenez:
-
-- [Email](adamjimenez642@gmail.com)
-- [LinkedIn](linkedin.com/in/adam-jimenez)
 
 ---
 

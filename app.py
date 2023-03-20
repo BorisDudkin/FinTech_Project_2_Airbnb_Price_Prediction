@@ -114,7 +114,7 @@ with tab2:
 
     # add section's description
     with st.expander("About this section"):
-        st.markdown("Initial Data Analysis begins with demonstrating the original dataset. It then continues by showing the progress in data cleansing - removing redundant features, giving columns more descriptive names, analizing the descriptive statistics of the data, its shape, checking for missing values duplicates and the types of data prsent in the dataset. The section continues with univariate analysis of the features and focuses on the outliers for our target variable _lisitng price_. The correction for outliers is suggested and the dataset after the correction is demostrated breaking the information by city.")
+        st.markdown("Initial Data Analysis begins with demonstrating the original dataset. It then continues by showing the progress in data cleansing - removing redundant features, giving columns more descriptive names, analizing the descriptive statistics of the data, its shape, checking for missing values duplicates and the types of data prsent in the dataset. The section continues with univariate analysis of the features and focuses on the outliers for our target variable _lisitng price_. The correction for outliers is suggested and the dataset after the correction is demostrated breaking down the information by city.")
 
     st.header('Original Data Review and Cleansing:')
 
@@ -259,7 +259,7 @@ with tab3:
 
     #add section's description
     with st.expander("About this section"):
-        st.markdown("Exploratory Data Analysis continues checking the data but this time focusing on the bivariate and multivariate relationship between the features and the target as well as between different features, including categorical/numerical and numerical/numerical analysis. The conclusions are drawn and mentioned at the end of the section.")
+        st.markdown("Exploratory Data Analysis continues researching the data but this time focusing on the bivariate and multivariate relationship between the features and the target, as well as between different features, including categorical/numerical and numerical/numerical analysis. The conclusions are drawn and mentioned at the end of the section.")
 
     # analyse listing prices by city/weekday and city/room type
     st.subheader('Listing Price and Categorical Features Analysis (per City by Day of Week or Room Type):')

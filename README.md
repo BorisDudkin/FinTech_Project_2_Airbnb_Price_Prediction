@@ -135,10 +135,10 @@ To install scikit library, in Terminal run:
 pip install -U scikit-learn
 ```
 
-Confirm the installation of the Alpaca Trade API package by running the following command in Terminal:
+To install compressor for pickle in Terminal run:
 
 ```python
- conda list alpaca-trade-api
+pip install mgzip
 ```
 
 ---

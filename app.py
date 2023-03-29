@@ -70,8 +70,8 @@ with tab1:
     st.markdown('**Please select a a :blue[city] in the sidebar to explore Airbnb interactive map by location.**')
     # create a plotly map figure and display it
     fig_map = px.density_mapbox(bnb_df_map.loc[bnb_df_map['city']==city_selection], lat = 'lat', lon = 'lng', z = 'realSum', radius = 10, center = dict(lat=bnb_df_map.loc[bnb_df['city']==city_selection]['lat'].mean(), lon = bnb_df_map.loc[bnb_df['city']==city_selection]['lng'].mean()),
-                                zoom = 11, hover_name='room_type', mapbox_style = 'open-street-map',
-                            title = 'Explore Listings in '+city_selection,labels={'realSum': 'Listing Price' })
+                                zoom = 12, hover_name='room_type', mapbox_style = 'open-street-map',
+                            title = 'Explore Listings in '+city_selection,labels={'realSum': 'Listing Price' }, color_continuous_scale=px.colors.sequential.Jet,)
     st.plotly_chart(fig_map,use_container_width=True)
 
     # add project description
@@ -476,18 +476,27 @@ with tab4:
             # st.write(round(np.sqrt(mse),2))
             # st.write(round(loss,2))
             prediction=nn.predict(X_test_scaled)
+            prediction_train=nn.predict(X_train_scaled)
             # get and display errors
+            st.success('Model is created and saved. View the evaluation results below:')
+            st.subheader('Test Data errors')  
             mean_square=round(np.sqrt(mean_squared_error(y_test, prediction)),2)
             mean_abs = round(mean_absolute_error(y_test, prediction),2)
-            st.success('Model is created and saved. View the evaluation results below:')
+
             st.markdown(f'Mean Square Error is: **:blue[{mean_square}]**')
             st.write(f'Mean Absolute Error is: **:blue[{mean_abs}]**')
+
+            st.subheader('Train Data errors')   
+            mean_square_train=round(np.sqrt(mean_squared_error(y_train, prediction_train)),2)
+            mean_abs_train = round(mean_absolute_error(y_train, prediction_train),2)
+            st.markdown(f'Trained Mean Square Error is: **:blue[{mean_square_train}]**')
+            st.write(f'TrainedMean Absolute Error is: **:blue[{mean_abs_train}]**')
 
             # Visualizing predictions vs lisitng price:
             df_predict['prediction']=nn.predict(X_scaler.transform(X))
             st.markdown('Dataframe including predictions:')
             st.dataframe(df_predict.tail())
-            fig_predictions=px.line(df_predict, y= ['listing_price','prediction'],title='<b>Listing Price vs Predicted Price</b>')
+            fig_predictions=px.line(df_predict, y= ['listing_price','prediction'],title='<b>Listing Price vs Predicted Price (total dataset)</b>')
             fig_predictions.update_layout(showlegend=True, yaxis_title="Prices", xaxis_title="Data Points")
             st.plotly_chart(fig_predictions,use_container_width=True)
 
@@ -513,13 +522,22 @@ with tab4:
 
            # Making predictions using the testing data
             prediction = rf_model.predict(X_test_scaled)
+            prediction_train=rf_model.predict(X_train_scaled)
 
-            # Displaying results            
+            # Displaying results
+            st.success('Model is created and saved. View the evaluation results below:')
+            st.subheader('Test Data errors')            
             mean_square=round(np.sqrt(mean_squared_error(y_test, prediction)),2)
             mean_abs = round(mean_absolute_error(y_test, prediction),2)
-            st.success('Model is created and saved. View the evaluation results below:')
+
             st.markdown(f'Mean Square Error is: **:blue[{mean_square}]**')
             st.write(f'Mean Absolute Error is: **:blue[{mean_abs}]**')
+
+            st.subheader('Train Data errors')   
+            mean_square_train=round(np.sqrt(mean_squared_error(y_train, prediction_train)),2)
+            mean_abs_train = round(mean_absolute_error(y_train, prediction_train),2)
+            st.markdown(f'Trained Mean Square Error is: **:blue[{mean_square_train}]**')
+            st.write(f'TrainedMean Absolute Error is: **:blue[{mean_abs_train}]**')
 
             # Feature Importance
             # Random Forests in sklearn will automatically calculate feature importance
@@ -548,7 +566,7 @@ with tab4:
             df_predict['prediction']=rf_model.predict(X_scaler.transform(X))
             st.markdown('Dataframe including predictions:')
             st.dataframe(df_predict.tail())
-            fig_predictions=px.line(df_predict, y= ['listing_price','prediction'],title='<b>Listing Price vs Predicted Price</b>')
+            fig_predictions=px.line(df_predict, y= ['listing_price','prediction'],title='<b>Listing Price vs Predicted Price (total dataset)</b>')
             fig_predictions.update_layout(showlegend=True, yaxis_title="Prices", xaxis_title="Data Points")
             st.plotly_chart(fig_predictions,use_container_width=True)
 

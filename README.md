@@ -1,6 +1,6 @@
 # Airbnb Listing Price Predictor
 
-### One of the critical components determining business competitiveness is a sound pricing strategy. New businesses need to set a right price to be able to enter the market, while both new and existing companies use pricing as one of their marketing mix tools to stay competitive and optimize their revenues.<br/> Airbnb Price Predictor, powered by Machine Learning Models and various data analysis techniques, provides Airbnb owners with a a price predicting tool based on their properties characteristics. The tool also allows the property owners to understand the interdependencies between the different components of their offerings.<br/> This application can also be used the travelers, who would like to estimate the Airbnb prices in their trip destination.
+### One of the critical components determining business competitiveness is a sound pricing strategy. New businesses need to set a right price to be able to enter the market, while both new and existing companies use pricing as one of their marketing mix tools to stay competitive and optimize their revenues.<br/> Airbnb Price Predictor, powered by Machine Learning Models and various data analysis techniques, provides Airbnb owners with a a price predicting tool based on their properties characteristics. The tool also allows the property owners to understand the interdependencies between the different components of their offerings.<br/> This application can also be used by the travelers, who would like to estimate the Airbnb prices in their trip destination.
 
 ---
 

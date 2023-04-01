@@ -141,24 +141,26 @@ with tab2:
     # create empty dictionary to store the user input   
     input_dict={}
     # add user input about an airbnb property to the sidebar based on the information in the dataset columns
-    st.sidebar.subheader('Airbnb Charcteristics:')
+    airbnb_form=st.sidebar.form(key='Characteristics')
+    airbnb_form.subheader('Airbnb Charcteristics:')
     for column in feater_columns:
         if column == "guest_satisfaction_overall":
-            input_dict[column] = st.sidebar.slider(column, min_value=20, max_value=100, value=90, step = 1)
+            input_dict[column] = airbnb_form.slider(column, min_value=20, max_value=100, value=90, step = 1)
         elif column == "metro_distance":
-            input_dict[column] = st.sidebar.slider(column, min_value=0.01, max_value=8.00, value=1.01, step = 0.01)
+            input_dict[column] = airbnb_form.slider(column, min_value=0.01, max_value=8.00, value=1.01, step = 0.01)
         elif column =="city_center_distance":
-            input_dict[column] = st.sidebar.slider(column, min_value=0.01, max_value=15.00, value=1.01, step = 0.01)
+            input_dict[column] = airbnb_form.slider(column, min_value=0.01, max_value=15.00, value=1.01, step = 0.01)
         elif column in categorical:
-            user_input =st.sidebar.selectbox(column, tuple(bnb_df[column].sort_values().unique()))
+            user_input =airbnb_form.selectbox(column, tuple(bnb_df[column].sort_values().unique()))
             for char in  bnb_df[column].unique():
                 if char ==user_input:
                     input_dict[column+'_'+char] = 1
                 else:
                     input_dict[column+'_'+char] = 0 
         else:
-            input_dict[column] =float(st.sidebar.selectbox(column, tuple(bnb_df[column].sort_values().unique())))
-   
+            input_dict[column] =float(airbnb_form.selectbox(column, tuple(bnb_df[column].sort_values().unique())))
+    
+    airbnb_form.form_submit_button('Submit your selections for price prediction')
     # create a dataframe based on the user inlut about airbnb listing
     input_df=pd.DataFrame(data = input_dict, index=[0])
 
@@ -355,9 +357,11 @@ with tab4:
     features_selection=df.drop(columns=['listing_price'])
 
     # create a user input for features to be included in the Machine Learning
+    
     st.header('Features Selection:')
-
-    features_list=st.multiselect('Select Features to be included in ML:', features_selection.columns, default = list(features_selection.columns))
+    features_form=st.form(key='Features')
+    features_list=features_form.multiselect('Select features to be included in ML:', features_selection.columns, default = list(features_selection.columns))
+    features_form.form_submit_button('Submit features for Machine Learning')
 
     features_df=df[features_list]
     target_col,features_col=st.columns([1,8])
@@ -409,18 +413,24 @@ with tab4:
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=1)
 
     # Create a StandardScaler instance
-    scaler =  StandardScaler()
+    scaler =  StandardScaler().fit(X_train)
 
     # Fit the scaler to the features training dataset
-    X_scaler = scaler.fit(X_train)
+    # X_scaler = scaler.fit(X_train)
 
     # Fit the scaler to the features training dataset
-    X_train_scaled = X_scaler.transform(X_train)
-    X_test_scaled = X_scaler.transform(X_test)
+    X_train_scaled = scaler.transform(X_train)
+    X_test_scaled = scaler.transform(X_test)
 
     # beging model-fit-predict-evaluate
     create_model=st.button('Create Machine Learning Model?')
+    # initialize session state:
+    # if "load_state" not in st.session_state:
+    #     st.session_state.load_state=False
+
+    # if create_model or st.session_state.load_state:
     if create_model:
+        # st.session_state.load_state = True
         with st.spinner('Model is being created. Please wait for the complition confirmation message.'):
             time.sleep(5)
 
@@ -493,7 +503,7 @@ with tab4:
             st.write(f'TrainedMean Absolute Error is: **:blue[{mean_abs_train}]**')
 
             # Visualizing predictions vs lisitng price:
-            df_predict['prediction']=nn.predict(X_scaler.transform(X))
+            df_predict['prediction']=nn.predict(scaler.transform(X))
             st.markdown('Dataframe including predictions:')
             st.dataframe(df_predict.tail())
             fig_predictions=px.line(df_predict, y= ['listing_price','prediction'],title='<b>Listing Price vs Predicted Price (total dataset)</b>')
@@ -563,7 +573,7 @@ with tab4:
             st.plotly_chart(fig_importance,use_container_width=True)
 
             # Visualizing predictions vs lisitng price:
-            df_predict['prediction']=rf_model.predict(X_scaler.transform(X))
+            df_predict['prediction']=rf_model.predict(scaler.transform(X))
             st.markdown('Dataframe including predictions:')
             st.dataframe(df_predict.tail())
             fig_predictions=px.line(df_predict, y= ['listing_price','prediction'],title='<b>Listing Price vs Predicted Price (total dataset)</b>')
@@ -572,7 +582,7 @@ with tab4:
 
             # Save model
             # data = {'model': rf_model, 'encoder': enc, 'scaler': scaler_rf}
-            data = {'model': rf_model}
+            data = {'model': rf_model, 'scaler': scaler}
             with mgzip.open('./Resources/random_forest.pkl', 'wb') as f:
                 pickle.dump(data, f)
             
@@ -615,14 +625,6 @@ with tab5:
 
         X_rf=predict_df
 
-        # Create a StandardScaler instance and fit our dataset
-        scaler_rf =  StandardScaler().fit(X_rf)
-
-          # Fit the scaler to the features training dataset
-        X_rf_scaled = scaler_rf.transform(X_rf)
-        #scale user input before applying the model to get prediction
-        X_user = scaler_rf.transform(input_df)
-
         # load Random Forest model
         with mgzip.open('./Resources/random_forest.pkl', 'rb') as f:
             data = pickle.load(f)
@@ -631,6 +633,16 @@ with tab5:
         #         data=pickle.load(file)
 
         loaded_model=data['model']
+        scaler_rf = data['scaler']
+
+        # Create a StandardScaler instance and fit our dataset
+        # scaler_rf =  StandardScaler().fit(X_rf)
+
+  
+        X_rf_scaled = scaler_rf.transform(X_rf)
+        #scale user input before applying the model to get prediction
+        X_user = scaler_rf.transform(input_df)
+
 
         #extract the user data from the dataframe
         one_row = input_df.iloc[0].values

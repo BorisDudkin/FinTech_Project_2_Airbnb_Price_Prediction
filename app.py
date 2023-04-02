@@ -89,8 +89,8 @@ with tab1:
 
     st.markdown('''The objective of the project is two-fold:
 1. Help Airbnb owners understanding the relationship between different characteristics of their property to potentially improve services and profitability of their business.
-2. Apply machine learning to the data set to be able to predict the listing price by providing selected features (based on the model optimization analysis). The ultimate objective here ranges from assisting:
-   - a traveler to estimate the Airbnb price in the vacation destination'
+2. Apply machine learning to the data set to be able to predict the listing price by providing selected features (based on the model optimization analysis). The ultimate objective here ranges from assisting;
+   - a traveler to estimate the Airbnb price in the vacation destination;
    - new business owners who are trying to set an appropriate competitive price for their property;
    - new and existing business owners who attempt to estimate what property characteristics affect the price of their property and how they can potentially improve their profitability.''')
 
@@ -102,7 +102,7 @@ with tab1:
     # add ideas for future researcg
     st.subheader('Other Areas to Investigate:')
 
-    st.markdown('''As the dataset contains cystomer satisfuction information, the next step could be to utilize Machine Learning Classifiers to study the relationship between the variables in the dataset and the custormer satisfaction. Such an alaysis could be useful for Airbnb owners who aim at optimizing different characteristics of their property to achive the maximum client satisfaction ''')
+    st.markdown('''As the dataset contains customer satisfuction information, the next step could be to utilize Machine Learning Classifiers to study the relationship between the variables in the dataset and the custormer satisfaction. Such an alaysis could be useful for Airbnb owners who aim at optimizing different characteristics of their property to achive the maximum client satisfaction ''')
 
 # create a tab for Initial data analysis
 with tab2:

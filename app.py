@@ -212,7 +212,7 @@ with tab2:
 
     # conduct bivariate(categorical/numerical analysis of lisitng prices per city to check for outliers)
     st.subheader('Listing Prices Outliers:')
-    st.markdown('Please select a a **:blue[city]** on the sidebar.')
+    st.markdown('Please select a **:blue[city]** on the sidebar.')
 
     col1,col2 = st.columns(2, gap='large')
     with col1:

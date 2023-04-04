@@ -2,8 +2,8 @@ import pickle
 import time
 from pathlib import Path
 
-import chart_studio.plotly as py
-import cufflinks as cf
+# import chart_studio.plotly as py
+# import cufflinks as cf
 import mgzip
 import numpy as np
 import pandas as pd

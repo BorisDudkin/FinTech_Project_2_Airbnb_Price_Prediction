@@ -2,7 +2,6 @@ import pickle
 import time
 from pathlib import Path
 
-import blosc
 import chart_studio.plotly as py
 import cufflinks as cf
 import mgzip

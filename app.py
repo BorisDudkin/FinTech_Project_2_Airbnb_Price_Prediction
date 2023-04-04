@@ -389,7 +389,8 @@ with tab4:
     # Create a DataFrame with the encoded variables
     encoded_df = pd.DataFrame(
         encoded_data,
-        columns = enc.get_feature_names(categorical_variables)
+        # columns = enc.get_feature_names(categorical_variables)
+        columns = enc.get_feature_names_out(categorical_variables)
     )
 
     # Add the numerical variables from the original DataFrame to the one-hot encoding DataFrame

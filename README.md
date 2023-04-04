@@ -50,7 +50,9 @@ _Libraries_
 
 ## Installation Guide
 
-The application must be started from the terminal using Streamlit, once in the directory of the application:<br/>
+Start the app here: [Airbnb Listing Price Predictor](https://borisdudkin-fintech-project-2-airbnb-price-predictio-app-bz4phm.streamlit.app/)<br/>
+
+Alternatively, the application can be started from the terminal using Streamlit, once in the directory of the application:<br/>
 
 ```python
 streamlit run app.py

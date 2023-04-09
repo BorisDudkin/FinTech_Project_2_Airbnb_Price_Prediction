@@ -46,6 +46,14 @@ _Libraries_
 
    - [scikit-learn ](https://scikit-learn.org/stable/) - for information on the library, its features and installation instructions.<br/>
 
+6. Python modules and libraries to facilitate API requests:
+
+- Requests: The Python Requests library helps you access data via APIs.
+
+- JSON: This library puts the response (that is, the data) from an API into a human-readable format.
+
+  The Requests and JSON libraries get installed with Anaconda. To verify, in Terminal type:
+
 ---
 
 ## Installation Guide
@@ -141,6 +149,19 @@ To install compressor for pickle in Terminal run:
 
 ```python
 pip install mgzip
+```
+
+If Requests and JSON libraries are missing, in Terminal run:
+
+```python
+conda install -c anaconda requests
+conda install -c jmcmurray json
+```
+
+To install Streamlit Lottie in Terminal run:
+
+```python
+pip install streamlit-lottie
 ```
 
 ---

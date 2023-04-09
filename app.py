@@ -641,8 +641,8 @@ with tab5:
         #         data=pickle.load(file)
 
         # set loaded model to st.empty to keep the cache cleared
-        loaded_model = st.empty()
-        scaler_rf = st.empty()
+        # loaded_model = st.empty()
+        # scaler_rf = st.empty()
 
         loaded_model=data['model']
         scaler_rf = data['scaler']

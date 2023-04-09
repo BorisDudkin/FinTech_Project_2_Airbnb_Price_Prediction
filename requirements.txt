@@ -2,7 +2,9 @@ mgzip
 numpy
 pandas
 plotly
+requests
 scikit_learn
 streamlit
+streamlit_lottie
 tensorflow
 tensorflow_intel

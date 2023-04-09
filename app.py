@@ -9,12 +9,14 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+import requests
 import streamlit as st
 import tensorflow as tf
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from streamlit_lottie import st_lottie, st_lottie_spinner
 from tensorflow.keras.layers import Dense
 from tensorflow.keras.models import Sequential, model_from_json
 
@@ -25,6 +27,29 @@ st.set_page_config(page_title="AirBnB Price Prediction with ML", layout='wide')
 def get_data(file_path):
     df = pd.read_csv(file_path)
     return df
+
+
+@st.cache_data
+def load_lottieurl(url: str):
+    r = requests.get(url)
+    if r.status_code != 200:
+        return None
+    return r.json()
+
+lottie_url = 'https://assets2.lottiefiles.com/packages/lf20_le8PpGpm9v.json'
+lottie_json = load_lottieurl(lottie_url)
+# st_lottie(lottie_json)
+
+# @st.cache_data
+# def load_lottieurl(path: str):
+#     with open(path) as f:
+#         data = json.load(f)
+#     return data
+
+# lottie_file = Path("./Images/ML.json")
+# lottie_json = load_lottieurl(lottie_file)
+# st_lottie(lottie_json)
+# st.write(lottie_json)
 
 # csv file with airbnb data
 file_path = Path("./Resources/air_bnb.csv")
@@ -439,168 +464,169 @@ with tab4:
     # if create_model or st.session_state.load_state:
     if create_model:
         # st.session_state.load_state = True
-        with st.spinner('Model is being created. Please wait for the complition confirmation message.'):
-            time.sleep(5)
+        # with st.spinner('Model is being created. Please wait for the complition confirmation message.'):
+        #     time.sleep(5)
+        with st_lottie_spinner(lottie_json, height=350):
 
-        if mlm_selection =='Neural Network':
+            if mlm_selection =='Neural Network':
 
-            # Define the the number of inputs (features) to the model
-            number_input_features =  len(X_train.iloc[0])
+                # Define the the number of inputs (features) to the model
+                number_input_features =  len(X_train.iloc[0])
 
-            # Define the number of neurons in the output layer
-            number_output_neurons = 1
+                # Define the number of neurons in the output layer
+                number_output_neurons = 1
 
-            #  n_epochs
-            # n_layers
-            # Define the number of hidden nodes for the first hidden layer
-            hidden_nodes_layer1 =   (number_input_features + number_output_neurons) // 2 
-            # st.write(hidden_nodes_layer1)
+                #  n_epochs
+                # n_layers
+                # Define the number of hidden nodes for the first hidden layer
+                hidden_nodes_layer1 =   (number_input_features + number_output_neurons) // 2 
+                # st.write(hidden_nodes_layer1)
 
-            # Define the number of hidden nodes for the second hidden layer
-            hidden_nodes_layer2 = (hidden_nodes_layer1 + number_output_neurons) // 2
+                # Define the number of hidden nodes for the second hidden layer
+                hidden_nodes_layer2 = (hidden_nodes_layer1 + number_output_neurons) // 2
 
-            #   Review the number hidden nodes in the second layer
-            # st.write(hidden_nodes_layer2)
+                #   Review the number hidden nodes in the second layer
+                # st.write(hidden_nodes_layer2)
 
-            # Define the number of hidden nodes for the third hidden layer
-            hidden_nodes_layer3 = (hidden_nodes_layer2 + number_output_neurons) // 2
+                # Define the number of hidden nodes for the third hidden layer
+                hidden_nodes_layer3 = (hidden_nodes_layer2 + number_output_neurons) // 2
 
-            #   Review the number hidden nodes in the second layer
-            # st.write(hidden_nodes_layer3)
-            # Create the Sequential model instance
-            nn = Sequential()
-            # Add the first hidden layer
-            nn.add(Dense(units=hidden_nodes_layer1, input_dim=number_input_features, activation="relu"))
+                #   Review the number hidden nodes in the second layer
+                # st.write(hidden_nodes_layer3)
+                # Create the Sequential model instance
+                nn = Sequential()
+                # Add the first hidden layer
+                nn.add(Dense(units=hidden_nodes_layer1, input_dim=number_input_features, activation="relu"))
 
-            if n_layers==2:
-                # Add the second hidden layer
-                nn.add(Dense(units=hidden_nodes_layer2, activation="relu"))
-            elif n_layers==3:
-                # Add the second hidden layer
-                nn.add(Dense(units=hidden_nodes_layer2, activation="relu"))
-                # Add the third hidden layer
-                nn.add(Dense(units=hidden_nodes_layer3, activation="relu"))
+                if n_layers==2:
+                    # Add the second hidden layer
+                    nn.add(Dense(units=hidden_nodes_layer2, activation="relu"))
+                elif n_layers==3:
+                    # Add the second hidden layer
+                    nn.add(Dense(units=hidden_nodes_layer2, activation="relu"))
+                    # Add the third hidden layer
+                    nn.add(Dense(units=hidden_nodes_layer3, activation="relu"))
 
-            # Output layer
-            nn.add(Dense(units=number_output_neurons, activation="linear"))
+                # Output layer
+                nn.add(Dense(units=number_output_neurons, activation="linear"))
 
-                #Compile the model
-            nn.compile(loss="mean_squared_error", optimizer="adam", metrics=["mse"])
+                    #Compile the model
+                nn.compile(loss="mean_squared_error", optimizer="adam", metrics=["mse"])
 
-            # Fit the model
-            model = nn.fit(X_train_scaled, y_train, epochs=n_epochs, verbose=1) 
-            # Evaluate the model loss and accuracy metrics using the evaluate method and the test data
-            loss, mse =  nn.evaluate(X_test_scaled,y_test,verbose=2)
-            # st.write(round(np.sqrt(mse),2))
-            # st.write(round(loss,2))
-            prediction=nn.predict(X_test_scaled)
-            prediction_train=nn.predict(X_train_scaled)
-            # get and display errors
-            st.success('Model is created and saved. View the evaluation results below:')
-            st.subheader('Test Data errors')  
-            mean_square=round(np.sqrt(mean_squared_error(y_test, prediction)),2)
-            mean_abs = round(mean_absolute_error(y_test, prediction),2)
+                # Fit the model
+                model = nn.fit(X_train_scaled, y_train, epochs=n_epochs, verbose=1) 
+                # Evaluate the model loss and accuracy metrics using the evaluate method and the test data
+                loss, mse =  nn.evaluate(X_test_scaled,y_test,verbose=2)
+                # st.write(round(np.sqrt(mse),2))
+                # st.write(round(loss,2))
+                prediction=nn.predict(X_test_scaled)
+                prediction_train=nn.predict(X_train_scaled)
+                # get and display errors
+                st.success('Model is created and saved. View the evaluation results below:')
+                st.subheader('Test Data errors')  
+                mean_square=round(np.sqrt(mean_squared_error(y_test, prediction)),2)
+                mean_abs = round(mean_absolute_error(y_test, prediction),2)
 
-            st.markdown(f'Mean Square Error is: **:blue[{mean_square}]**')
-            st.write(f'Mean Absolute Error is: **:blue[{mean_abs}]**')
+                st.markdown(f'Mean Square Error is: **:blue[{mean_square}]**')
+                st.write(f'Mean Absolute Error is: **:blue[{mean_abs}]**')
 
-            st.subheader('Train Data errors')   
-            mean_square_train=round(np.sqrt(mean_squared_error(y_train, prediction_train)),2)
-            mean_abs_train = round(mean_absolute_error(y_train, prediction_train),2)
-            st.markdown(f'Trained Mean Square Error is: **:blue[{mean_square_train}]**')
-            st.write(f'TrainedMean Absolute Error is: **:blue[{mean_abs_train}]**')
+                st.subheader('Train Data errors')   
+                mean_square_train=round(np.sqrt(mean_squared_error(y_train, prediction_train)),2)
+                mean_abs_train = round(mean_absolute_error(y_train, prediction_train),2)
+                st.markdown(f'Trained Mean Square Error is: **:blue[{mean_square_train}]**')
+                st.write(f'TrainedMean Absolute Error is: **:blue[{mean_abs_train}]**')
 
-            # Visualizing predictions vs lisitng price:
-            df_predict['prediction']=nn.predict(scaler.transform(X))
-            st.markdown('Dataframe including predictions:')
-            st.dataframe(df_predict.tail())
-            fig_predictions=px.line(df_predict, y= ['listing_price','prediction'],title='<b>Listing Price vs Predicted Price (total dataset)</b>')
-            fig_predictions.update_layout(showlegend=True, yaxis_title="Prices", xaxis_title="Data Points")
-            st.plotly_chart(fig_predictions,use_container_width=True)
+                # Visualizing predictions vs lisitng price:
+                df_predict['prediction']=nn.predict(scaler.transform(X))
+                st.markdown('Dataframe including predictions:')
+                st.dataframe(df_predict.tail())
+                fig_predictions=px.line(df_predict, y= ['listing_price','prediction'],title='<b>Listing Price vs Predicted Price (total dataset)</b>')
+                fig_predictions.update_layout(showlegend=True, yaxis_title="Prices", xaxis_title="Data Points")
+                st.plotly_chart(fig_predictions,use_container_width=True)
 
-            # Save model as JSON
-            nn_json = nn.to_json()
+                # Save model as JSON
+                nn_json = nn.to_json()
 
-            file_path = Path("./Resources/model.json")
-            with open(file_path, "w") as json_file:
-                json_file.write(nn_json)
-            # Save weights
-            file_path = "./Resources/model.h5"
-            nn.save_weights("./Resources/model.h5")
+                file_path = Path("./Resources/model.json")
+                with open(file_path, "w") as json_file:
+                    json_file.write(nn_json)
+                # Save weights
+                file_path = "./Resources/model.h5"
+                nn.save_weights("./Resources/model.h5")
 
-            # save encoded dataframe to have the list of the features corresponding to the tranied model
-            encoded_df.to_csv(Path('./Resources/neural_network.csv'), encoding='utf-8', index=False)
+                # save encoded dataframe to have the list of the features corresponding to the tranied model
+                encoded_df.to_csv(Path('./Resources/neural_network.csv'), encoding='utf-8', index=False)
 
-        else:
-            # Create arandom forest regressor model
-            rf_model = RandomForestRegressor(max_depth=max_depth, n_estimators=n_estimators, random_state=1)
-            
-            # Fit the model
-            rf_model = rf_model.fit(X_train_scaled, y_train)
+            else:
+                # Create arandom forest regressor model
+                rf_model = RandomForestRegressor(max_depth=max_depth, n_estimators=n_estimators, random_state=1)
+                
+                # Fit the model
+                rf_model = rf_model.fit(X_train_scaled, y_train)
 
-           # Making predictions using the testing data
-            prediction = rf_model.predict(X_test_scaled)
-            prediction_train=rf_model.predict(X_train_scaled)
+            # Making predictions using the testing data
+                prediction = rf_model.predict(X_test_scaled)
+                prediction_train=rf_model.predict(X_train_scaled)
 
-            # Displaying results
-            st.success('Model is created and saved. View the evaluation results below:')
-            st.subheader('Test Data errors')            
-            mean_square=round(np.sqrt(mean_squared_error(y_test, prediction)),2)
-            mean_abs = round(mean_absolute_error(y_test, prediction),2)
+                # Displaying results
+                st.success('Model is created and saved. View the evaluation results below:')
+                st.subheader('Test Data errors')            
+                mean_square=round(np.sqrt(mean_squared_error(y_test, prediction)),2)
+                mean_abs = round(mean_absolute_error(y_test, prediction),2)
 
-            st.markdown(f'Mean Square Error is: **:blue[{mean_square}]**')
-            st.write(f'Mean Absolute Error is: **:blue[{mean_abs}]**')
+                st.markdown(f'Mean Square Error is: **:blue[{mean_square}]**')
+                st.write(f'Mean Absolute Error is: **:blue[{mean_abs}]**')
 
-            st.subheader('Train Data errors')   
-            mean_square_train=round(np.sqrt(mean_squared_error(y_train, prediction_train)),2)
-            mean_abs_train = round(mean_absolute_error(y_train, prediction_train),2)
-            st.markdown(f'Trained Mean Square Error is: **:blue[{mean_square_train}]**')
-            st.write(f'TrainedMean Absolute Error is: **:blue[{mean_abs_train}]**')
+                st.subheader('Train Data errors')   
+                mean_square_train=round(np.sqrt(mean_squared_error(y_train, prediction_train)),2)
+                mean_abs_train = round(mean_absolute_error(y_train, prediction_train),2)
+                st.markdown(f'Trained Mean Square Error is: **:blue[{mean_square_train}]**')
+                st.write(f'TrainedMean Absolute Error is: **:blue[{mean_abs_train}]**')
 
-            # Feature Importance
-            # Random Forests in sklearn will automatically calculate feature importance
-            importances = rf_model.feature_importances_
-            # Zip the feature importances with the associated feature name
-            important_features = zip(X.columns, importances)
+                # Feature Importance
+                # Random Forests in sklearn will automatically calculate feature importance
+                importances = rf_model.feature_importances_
+                # Zip the feature importances with the associated feature name
+                important_features = zip(X.columns, importances)
 
-            # Create a dataframe of the important features
-            importances_df = pd.DataFrame(important_features)
+                # Create a dataframe of the important features
+                importances_df = pd.DataFrame(important_features)
 
-            # Rename the columns
-            importances_df = importances_df.rename(columns={0: 'Feature', 1: 'Importance'})
+                # Rename the columns
+                importances_df = importances_df.rename(columns={0: 'Feature', 1: 'Importance'})
 
-            # Set the index
-            importances_df = importances_df.set_index('Feature')
+                # Set the index
+                importances_df = importances_df.set_index('Feature')
 
-            # Sort the dataframe by feature importance
-            importances_df = importances_df.sort_values(by='Importance',ascending=False)
+                # Sort the dataframe by feature importance
+                importances_df = importances_df.sort_values(by='Importance',ascending=False)
 
-            # Create a plot
-            fig_importance = px.bar(importances_df,  title = 'Feature Importance')
-            fig_importance.update_layout(uniformtext_minsize=8, yaxis_title='Importance Score', xaxis_title='Feature', showlegend=False)
-            st.plotly_chart(fig_importance,use_container_width=True)
+                # Create a plot
+                fig_importance = px.bar(importances_df,  title = 'Feature Importance')
+                fig_importance.update_layout(uniformtext_minsize=8, yaxis_title='Importance Score', xaxis_title='Feature', showlegend=False)
+                st.plotly_chart(fig_importance,use_container_width=True)
 
-            # Visualizing predictions vs lisitng price:
-            df_predict['prediction']=rf_model.predict(scaler.transform(X))
-            st.markdown('Dataframe including predictions:')
-            st.dataframe(df_predict.tail())
-            fig_predictions=px.line(df_predict, y= ['listing_price','prediction'],title='<b>Listing Price vs Predicted Price (total dataset)</b>')
-            fig_predictions.update_layout(showlegend=True, yaxis_title="Prices", xaxis_title="Data Points")
-            st.plotly_chart(fig_predictions,use_container_width=True)
+                # Visualizing predictions vs lisitng price:
+                df_predict['prediction']=rf_model.predict(scaler.transform(X))
+                st.markdown('Dataframe including predictions:')
+                st.dataframe(df_predict.tail())
+                fig_predictions=px.line(df_predict, y= ['listing_price','prediction'],title='<b>Listing Price vs Predicted Price (total dataset)</b>')
+                fig_predictions.update_layout(showlegend=True, yaxis_title="Prices", xaxis_title="Data Points")
+                st.plotly_chart(fig_predictions,use_container_width=True)
 
-            # Save model
-            # data = {'model': rf_model, 'encoder': enc, 'scaler': scaler_rf}
-            data = {'model': rf_model, 'scaler': scaler}
-            with mgzip.open('./Resources/random_forest.pkl', 'wb') as f:
-                pickle.dump(data, f)
-            
-            
-            # with open(Path('./Resources/random_forest.pkl'), 'wb') as file:
-            #     pickle.dump(data, file)
+                # Save model
+                # data = {'model': rf_model, 'encoder': enc, 'scaler': scaler_rf}
+                data = {'model': rf_model, 'scaler': scaler}
+                with mgzip.open('./Resources/random_forest.pkl', 'wb') as f:
+                    pickle.dump(data, f)
+                
+                
+                # with open(Path('./Resources/random_forest.pkl'), 'wb') as file:
+                #     pickle.dump(data, file)
 
-            # save encoded dataframe to have the list of the features corresponding to the tranied model
-            X.to_csv(Path('./Resources/rf.csv'), encoding='utf-8', index=False)
-
+                # save encoded dataframe to have the list of the features corresponding to the tranied model
+                X.to_csv(Path('./Resources/rf.csv'), encoding='utf-8', index=False)
+        # st.balloons()
 #begin new tab for the prediction section
 with tab5:
     #provide the name of the section

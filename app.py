@@ -65,6 +65,7 @@ with tab1:
     with title:
         st.title('Airbnb Price Prediction (European cities)')
 
+    st.write('---')
     # give instructions to select a city for the interactive map dispalying airbnb properties in this city
     st.markdown('**Please select a a :blue[city] in the sidebar to explore Airbnb interactive map by location.**')
     # create a plotly map figure and display it
@@ -73,6 +74,7 @@ with tab1:
                             title = 'Explore Listings in '+city_selection,labels={'realSum': 'Listing Price' }, color_continuous_scale=px.colors.sequential.Jet,)
     st.plotly_chart(fig_map,use_container_width=True)
 
+    st.write('---')
     # add project description
     st.subheader('Project Description:')
 
@@ -118,9 +120,10 @@ with tab2:
         st.markdown("Initial Data Analysis begins with demonstrating the original dataset. It then continues by showing the progress in data cleansing - removing redundant features, giving columns more descriptive names, analizing the descriptive statistics of the data, its shape, checking for missing values duplicates and the types of data prsent in the dataset. The section continues with univariate analysis of the features and focuses on the outliers for our target variable _lisitng price_. The correction for outliers is suggested and the dataset after the correction is demostrated breaking down the information by city.")
 
     st.header('Original Data Review and Cleansing:')
-
+    st.write('#')
     #display first 5 rows of the original data
     st.subheader('Original Dataset (top 5 rows) :')
+    
     st.dataframe(df_original.head(),use_container_width=True)
 
     # remove redundant columns
@@ -162,18 +165,19 @@ with tab2:
     airbnb_form.form_submit_button('Submit your selections for price prediction')
     # create a dataframe based on the user inlut about airbnb listing
     input_df=pd.DataFrame(data = input_dict, index=[0])
-
+    st.write('#')
     # display top five rows of the modified dataset after removing redundant columns and changing column names
     st.subheader('Modified Dataset (top 5 rows)')
     st.markdown('NOTE: Redundant columns removed, descriptive names given to columns, boolean type columns modified.')
     st.dataframe(bnb_df.head(),use_container_width=True)
-
+    st.write('#')
     #show descriptive statistics of the dataset
     st.subheader('Descriptive Statistics:')
     st.write(bnb_df.describe(),use_container_width=True)
-
+    st.write('#')
     # conduct univariate analysis of the data (shape, duplicates, missing values, columns datatypes)
     st.subheader('Dataset Deepdive:')
+
     col1,col2,col3,col4 = st.columns(4, gap='large')
     
     with col1:
@@ -193,6 +197,7 @@ with tab2:
         st.write(bnb_df.dtypes,use_container_width=True)
         st.markdown('There are three columns with cathegorical data: day_of_week, room_type and city, which is in line with expectations.')
     
+    st.write('---')
     #conduct univariate analysis of data to check for data distribution and outliers
     st.subheader('Data Distirbution and Outliers:')
     
@@ -242,6 +247,7 @@ with tab2:
     df=bnb_df.loc[bnb_df['listing_price']<=500]
     df = df.reset_index(drop=True)
 
+    st.write('#')
     # display data distribution after correcting for outliers
     st.markdown('#### Dataset Shape corrected for outliers:')
     st.write(df.shape,use_container_width=True)
@@ -282,7 +288,8 @@ with tab3:
         city_room_fig=px.bar(df_city_room, x='city', y='listing_price', color='room_type', barmode='group', title = 'Average Listing Prices per City by Room Type', text='listing_price', labels={'city': 'City', 'room_type': 'Room Type', 'listing_price': 'Price' })
         city_room_fig.update_traces(texttemplate='%{text:2s}', textposition='outside')
         st.plotly_chart(city_room_fig,use_container_width=True)
-
+    
+    st.write('---')
     # analyse regression of different features vs lisitng prices (target)
     st.subheader(city_selection +' Listing Price (Target) / Features Regression Analysis:')
     st.markdown('**Please select a a :blue[city] in the sidebar.**')
@@ -304,7 +311,8 @@ with tab3:
               facet_col=z_scale, title='Target/Feature Regression Analysis')
 
         st.plotly_chart(fig_regression,use_container_width=True)    
-   
+    
+    st.write('---')
     # analyse correlation between the target and the features
     st.subheader(city_selection+  ' Listing Price (Target) / Features Correlation Analysis:')
     
@@ -608,10 +616,10 @@ with tab5:
     st.subheader('Applying Saved Machine Learning Model:')
     st.markdown('**Random Forest Model showed to be superior to Neural Network in terms of producing smaller errors, as well as being less time consuming to run. Therefore, Random Forest will be used to generate Airbnb price prediction in this section.**')
     st.markdown('**Provide information about your Airbnb on the Sidebar to predict the lising price**')
-    st.warning('**Please make sure the Random Forest model is saved in the Resources folder before predicting the price! If not saved, go to the Machine Learning tab and create the model.**')
+    #st.warning('**Please make sure the Random Forest model is saved in the Resources folder before predicting the price! If not saved, go to the Machine Learning tab and create the model.**')
     st.error('**Do not start predicting before all the required Airbnb relating input is provided!**')
     
-    agree = st.button('Predict listing price?')
+    agree = st.button('Predict listing price')
 
     if agree:
         # download the encoded complete features data to 1) align the selected features when generating the model and user inout and 2) train the scaler
@@ -631,6 +639,10 @@ with tab5:
 
         # with open(Path('./Resources/random_forest.pkl'), 'rb') as file:
         #         data=pickle.load(file)
+
+        # set loaded model to st.empty to keep the cache cleared
+        loaded_model = st.empty()
+        scaler_rf = st.empty()
 
         loaded_model=data['model']
         scaler_rf = data['scaler']

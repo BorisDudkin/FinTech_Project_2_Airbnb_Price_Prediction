@@ -231,7 +231,9 @@ with tab2:
     col1,col2 = st.columns(2, gap='large')
   
     with col1:
-        fig = px.bar(bnb_df[column_selection].value_counts(), y=column_selection, labels={'index': 'Unique Values' }, title = column_selection + ' - Unique Values Count')
+        value_counts_df = bnb_df[column_selection].value_counts().reset_index()
+        value_counts_df.columns = [column_selection, 'count']
+        fig = px.bar(value_counts_df, x=column_selection, y='count', labels={column_selection: 'Unique Values', 'count': 'Count' }, title = column_selection + ' - Unique Values Count')
         fig.update_layout(uniformtext_minsize=8, yaxis_title='Unique Values count', xaxis_title=column_selection)
         st.plotly_chart(fig,use_container_width=True)
 

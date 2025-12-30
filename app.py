@@ -345,7 +345,7 @@ with tab3:
     
     col1,col2 = st.columns(2, gap='large')
     with col1:
-        corr_df = df_city.corr()[['listing_price']].sort_values(by='listing_price', ascending=False)
+        corr_df = df_city.select_dtypes(include=[np.number]).corr()[['listing_price']].sort_values(by='listing_price', ascending=False)
 
         st.markdown(' ##### Target/Features Correlations:')
         fig = px.imshow(corr_df.round(2), color_continuous_scale='Viridis', aspect="auto", text_auto=".2f")
@@ -357,7 +357,7 @@ with tab3:
     with col2:
         st.markdown(' ##### Features Correlations:')
 
-        corr_m = df_city.corr()
+        corr_m = df_city.select_dtypes(include=[np.number]).corr()
 
          # Correlation
         df_corr =corr_m.round(2)
@@ -365,7 +365,7 @@ with tab3:
         mask = np.zeros_like(df_corr, dtype=bool)
         mask[np.triu_indices_from(mask)] = True
         # Viz
-        df_corr_viz = df_corr.mask(mask).dropna(how='all').dropna('columns', how='all')
+        df_corr_viz = df_corr.mask(mask).dropna(how='all').dropna(axis='columns', how='all')
         fig = px.imshow(df_corr_viz, text_auto=True, color_continuous_scale='Viridis')
         # fig.update_xaxes(side="top")
         st.plotly_chart(fig,use_container_width=True) 

@@ -198,7 +198,7 @@ with tab2:
     st.write('#')
     #show descriptive statistics of the dataset
     st.subheader('Descriptive Statistics:')
-    st.write(bnb_df.describe(),use_container_width=True)
+    st.dataframe(bnb_df.describe(),use_container_width=True)
     st.write('#')
     # conduct univariate analysis of the data (shape, duplicates, missing values, columns datatypes)
     st.subheader('Dataset Deepdive:')
@@ -207,19 +207,19 @@ with tab2:
     
     with col1:
         st.markdown('#### Dataset Shape:')
-        st.write(bnb_df.shape,use_container_width=True)
+        st.write(bnb_df.shape)
         st.markdown('The modified dataset has 51,707 rows and 13 columns.')
     with col2:
         st.markdown(' #### Duplicated Rows:')
-        st.write(bnb_df.duplicated().sum(),use_container_width=True)
+        st.write(bnb_df.duplicated().sum())
         st.markdown('There are no duplicated rows.')
     with col3:
         st.markdown(' #### Misssing Values:')
-        st.write(bnb_df.isnull().sum(),use_container_width=True)
+        st.write(bnb_df.isnull().sum())
         st.markdown('There are no missing values.')
     with col4:
         st.markdown(' #### Columns Datatypes:')
-        st.write(bnb_df.dtypes,use_container_width=True)
+        st.write(bnb_df.dtypes)
         st.markdown('There are three columns with cathegorical data: day_of_week, room_type and city, which is in line with expectations.')
     
     st.write('---')
@@ -275,7 +275,7 @@ with tab2:
     st.write('#')
     # display data distribution after correcting for outliers
     st.markdown('#### Dataset Shape corrected for outliers:')
-    st.write(df.shape,use_container_width=True)
+    st.write(df.shape)
    
     price_outliers_new=px.violin(df, x='city', y='listing_price', box=True, 
                 color='day_of_week', points='all', hover_data=df.columns,
@@ -399,7 +399,7 @@ with tab4:
     target_col,features_col=st.columns([1,8])
     with target_col:
         st.markdown('Target:')
-        st.write(y[-5:],use_container_width=True)
+        st.write(y[-5:])
     with features_col:
         st.markdown('Features (bottom 5 rows):')
         st.dataframe(features_df.tail())

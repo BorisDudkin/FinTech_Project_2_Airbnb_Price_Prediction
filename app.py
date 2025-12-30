@@ -317,7 +317,7 @@ with tab3:
     st.write('---')
     # analyse regression of different features vs lisitng prices (target)
     st.subheader(city_selection +' Listing Price (Target) / Features Regression Analysis:')
-    st.markdown('**Please select a a :blue[city] in the sidebar.**')
+    st.markdown('**Please select a :blue[city] in the sidebar.**')
     df_city=df.loc[df['city']==city_selection]
 
     col1,col2=st.columns([1,4])
